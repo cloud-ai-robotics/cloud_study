@@ -22,12 +22,12 @@
 |          스터디 내용         |   날짜와 시간     | 발표자 
 | -------------------------- |:---------------:|-----:|
 | Raspberry Pi 를 이용한 Access Point 구성<br> * Network 기본에 대한 이해<br> * NAT 에 대한 이해<br> * Bridged Network 에 대한 이해 | -- | -- |
-| 자기 개발 환경에 Docker 설치<br> * Docker 가 무엇인지 기본에 대한 이해 | -- | -- |
+| 개발 환경에 Docker 설치<br> * Docker 가 무엇인지 기본에 대한 이해 | -- | -- |
 | Docker Image 만들어 보기<br> * Dockerfile 형식에 대한 이해<br> * Docker 이미지 생성시 필요한 사용자 인증(user credentials) 정보 처리 방법 | -- | -- |
 | Docker Private Registry 만들어보기<br> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.| -- | -- |
-| 자기 개발 환경에 Kubernetes (minikube) 설치<br> * Kurbernetes 에 대한 이해 (기초 모듈 파악하기) | -- | -- |
-| Kubernetes cluster 이해하기<br> * Kubernetes 설정(yaml) 에 대한 이해<br> * Docker Image 배포하기| -- | -- |
-| Terraform script 만들기<br>...| -- | -- |
+| 개발 환경에 Kubernetes (minikube) 설치<br> * Kurbernetes 에 대한 이해 (기초 모듈 파악하기) | -- | -- |
+| Kubernetes cluster 이해하기<br> * kubectl 명령어 사용해보기| -- | -- |
+| Terraform 이해하기<br>...| -- | -- |
 
 ## 클라우드 컴퓨팅 스터디 안내
 - 시간과 장소
