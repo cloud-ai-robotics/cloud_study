@@ -94,6 +94,7 @@
 - Kubernetes
   - [What is Kubernetes](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/)
   - [Docker Kubernetes Service](https://www.docker.com/products/kubernetes)
+  - [Kubernetes 기초 모듈](https://kubernetes.io/ko/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/)
 
 - Understanding Container Technology
   - [LXC vs Docker](https://pasztor.at/blog/lxc-vs-docker)
