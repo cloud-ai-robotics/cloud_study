@@ -22,6 +22,8 @@
 | Docker Private Registry 만들어보기<br> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.| -- | -- |
 | 개발 환경에 Kubernetes (minikube) 설치<br> * Kurbernetes 에 대한 이해 (기초 모듈 파악하기) | -- | -- |
 | Kubernetes cluster 이해하기<br> * kubectl 명령어 사용해보기| -- | -- |
+| Kubernetes 에서 deploy 할 때 Docker Private Registry 로 부터 Docker 이미지를 받아 올 수 있도록 만들기<br> * [K8s Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) | -- | -- |
+| RPi3 여러대를 Kubernetes 로 clustering 하기<br> * [RPi3 K8s](https://medium.com/nycdev/k8s-on-pi-9cc14843d43) | -- | -- |
 | Terraform 이해하기<br>...| -- | -- |
 
 ### 스터디 소주제 (스터디를 하면서 만들어 보고 싶은 것)
@@ -51,12 +53,15 @@
    한 조당 기본 최대 3인이며, 스터디 정규 멤버가 아닌 경우, 임의의 조에 편성되어 같이 실습합니다.
 
  * 시간표
+
    7시 00분 ~ 7시 30분 : 기초 이론에 대하여 궁금한것에 대해 서로 묻고 답하는 시간 
                          기초 이론은 Network, Operating System(Linux) 이며,
                          업무하다가, 공부하다가 궁금한것이 있었다면, 처음 30분 동안 서로 질문하고 답하는 시간입니다.
 
    7시 30분 ~ 8시 50분 : 주별 지정된 주제에 대해 실습을 진행합니다. 
-   8시 50분 ~ 9시 00분 : 조별 실습 결과 공유 한 후 종료: 어려웠던 점, 배운 점, 궁금한 점등 (궁금한 것은 다음 주에 이어서 논의)
+
+   8시 50분 ~ 9시 ??분 : 조별 실습 결과 공유 한 후 종료: 어려웠던 점, 배운 점, 궁금한 점등 (궁금한 것은 다음 주에 이어서 논의)
+                         종료 시간은 장소를 제공해주시는 대표님 재량에 따라 조금씩 늘어날 수도 있습니다. (필요한 경우라면)
 
 ### 이론 공부 자료: 굳이 아래 자료가 아니어도 상관없습니다. 지금 가지고 있는 책으로 공부하셔도 무방합니다.
 
@@ -92,6 +97,7 @@
 | 결석 | 5천원 | 4천원 |
 
  * 해당 주에 실습 결과 공유를 못하면, 다음주에 간식 사오기? 할까요?
+
  * 스터디가 끝나거나, 참여를 못하게 되면, 남은 금액을 다시 돌려드립니다. (아니면 종강 PARTY!!)
 
 ## 유용한 링크 모음
