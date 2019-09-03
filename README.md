@@ -29,6 +29,11 @@
 | Kubernetes cluster 이해하기<br> * kubectl 명령어 사용해보기| -- | -- |
 | Terraform 이해하기<br>...| -- | -- |
 
+### 스터디 소주제 (스터디를 하면서 만들어 보고 싶은 것)
+ 1. Tensorflow 및 PyTorch 등과 같은 머신러닝 관련 서비스를 Docker 이미지로 만들어 deploy 시켜서 작은 서비스를 만들어 보자. (Docker, K8s, Terraform 모두 적용)
+ 2. AI Chatbot Service Docker 이미지를 만들어 서비스 해보자. (Docker, K8s, Terraform 모두 적용)
+ 3. 여러대의 Rapsberry Pi 들을 Node 로 구성하여 Kubernetes 로 관리해보자.
+
 ## 클라우드 컴퓨팅 스터디 안내
 - 시간과 장소
 
