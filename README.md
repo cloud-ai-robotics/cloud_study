@@ -14,7 +14,7 @@
 
 
 ## 스터디원이 가지고 있으면 좋을 것 같은 것
-- commend line interface 에 익숙하신 분 [필수는 아님...]
+- command line interface 에 익숙하신 분 [필수는 아님...]
 - Cloud computing에 관심이 있으신 분
 - 뭔가 하고싶은 분
 
