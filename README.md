@@ -43,7 +43,7 @@
 - 연락처
 
   * email: cloud@futuremobile.net
-  * 슬랙 채널 #study_클라우드_컴퓨팅, #ch_클라우드_컴퓨팅
+  * 슬랙 채널 [#study_클라우드_컴퓨팅](https://airoboticskr.slack.com/messages/CKUJC3XM2), [#ch_클라우드_컴퓨팅](https://app.slack.com/client/THA6JGK6G/CKTDU9SAY)
   * AI robotics 카카오톡 단톡방
 
 - 스터디 형식: 실습 중심, 발표 자료 준비 필요 없음, 발표자 없음.
