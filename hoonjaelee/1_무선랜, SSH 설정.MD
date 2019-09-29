@@ -11,7 +11,7 @@
 - sd카드 boot 폴더에 wpa_supplicant.conf 파일을 만들고 아래와 같이 내용을 채움
 ~~~
 country=GB #KR은 안되는 것 같음 (why?)
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+ctrl_interface=DIR=/run/wpa_supplicant GROUP=netdev
 update_config=1
 
 network={
