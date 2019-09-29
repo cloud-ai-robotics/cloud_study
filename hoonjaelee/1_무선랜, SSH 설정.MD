@@ -10,7 +10,7 @@
 - 라즈비안에서는 부팅할 때 boot 폴더에 있는 wpa_supplicant.conf 파일을 참고하여 무선랜을 연결함
 - sd카드 boot 폴더에 wpa_supplicant.conf 파일을 만들고 아래와 같이 내용을 채움
 ~~~
-country=KR
+country=GB #KR은 안되는 것 같음 (why?)
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 
