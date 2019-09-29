@@ -17,7 +17,6 @@ update_config=1
 network={
 ssid="NETWORK_NAME"
 psk="PASSWORD"
-key_mgmt=WPA-PSK WPA-EAP
 }
 ~~~
   
@@ -30,6 +29,10 @@ key_mgmt=WPA-PSK WPA-EAP
 ## 4. SSH 접속
 - 1번 설정을 통해서 SSH를 활성화 하고, 2번을 통해서 라즈베리파이를 공유기에 접속시킨 후, 3번을 통해서 IP를 알아내었다면, 이제 무선으로 접속이 가능함.
 - 접속 명령어 `ssh 172.30.1.43 -l pi` 기본 비밀번호 `raspberry`
+
+## 주의
+- 라즈베리파이에 SD 카드를 넣고 한 번 부팅하면 boot 폴더의 ssh 파일과 wpa_supplicant.conf 파일은 삭제됨
+- 하지만 세팅값은 저장 되는 것 같음
 
 ## 참고자료
 1. https://www.raspberrypi.org/downloads/raspbian/
