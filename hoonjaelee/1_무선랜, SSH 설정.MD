@@ -32,10 +32,16 @@ psk="PASSWORD"
 
 ## 주의
 - 라즈베리파이에 SD 카드를 넣고 한 번 부팅하면 boot 폴더의 ssh 파일과 wpa_supplicant.conf 파일은 삭제됨
-- 하지만 세팅값은 저장 되는 것 같음
+- ~하지만 세팅값은 저장 되는 것 같음~ 세팅값은 저장됨
+- systemd service 파일중에 boot 파티션에 SSH 파일이 있으면 sshd 서비스를 활성화 시킴.
+- service 파일 중에 boot 파티션에 wpa_supplicant.conf 파일이 있으면 /etc/wpa_supplicant 폴더 밑으로 이동시킴.
+- 활성된 서비스들은 라즈베리파이로 부팅한 후 /lib/systemd/system 폴더 밑에서 unit service 파일들이 있어서 grep으로 찾아 볼 수 있음. 또는 `systemctl list-unit-file` 명령어로 모든 서비스 목록과 상태를 조회 할 수 있음
+
 
 ## 참고자료
 1. https://www.raspberrypi.org/downloads/raspbian/
 2. https://www.raspberrypi.org/documentation/installation/installing-images/README.md
 3. https://m.blog.naver.com/PostView.nhn?blogId=specialist0&logNo=221232983680
 4. https://w1.fi/cgit/hostap/plain/wpa_supplicant/wpa_supplicant.conf
+5. https://github.com/ai-robotics-kr/cloud_study/pull/10#discussion_r329353451
+6. http://linux.systemv.pe.kr/centos-7-systemd-%EC%9D%B4%ED%95%B4%ED%95%98%EA%B8%B0/
