@@ -18,19 +18,30 @@
 - Cloud computing에 관심이 있으신 분
 - 뭔가 하고싶은 분
 
+- 아래 장비는 없어도 스터디에 큰 지장은 없지만, 있으면 직접해 볼 수 있습니다.
+  - Raspberry Pi 3 이상
+  - 대용량 SD 카드
+  - 무선 Lan USB (AP 구성시 필요)
+
 ## 스터디 진도표
 
-|          스터디 내용         |   날짜와 시간     | 스터디 결과 |
+|          스터디 내용         |   날짜와 시간     | 스터디 대상 |
 | -------------------------- |:---------------:|-----:|
-| Raspberry Pi 를 이용한 Access Point 구성<br> * Network 기본에 대한 이해<br> * NAT 에 대한 이해<br> * Bridged Network 에 대한 이해 | -- | -- |
+| Raspberry Pi 를 이용한 Access Point 구성<br> * Network 기본에 대한 이해<br> * NAT 에 대한 이해<br> * Bridged Network 에 대한 이해 | 2019-9-18 | 신규멤버 |
 | 개발 환경에 Docker 설치<br> * Docker 가 무엇인지 기본에 대한 이해 <br> * Docker 기본 명령어 실습 | -- | -- |
-| Docker Image 만들어 보기<br> * Dockerfile 형식에 대한 이해<br> * Docker 이미지 생성시 필요한 사용자 인증(user credentials) 정보 처리 방법 | -- | -- |
-| Docker Private Registry 만들어보기<br> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.| -- | -- |
+| Docker Image 만들어 보기<br> * Dockerfile 형식에 대한 이해<br> * Docker 이미지 생성시 필요한 사용자 인증(user credentials) 정보 처리 방법 | 2019-9-18 | 기존멤버 |
+| Docker Private Registry 만들어보기<br> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.| 2019-9-18 | 기존멤버 |
 | 개발 환경에 Kubernetes (minikube) 설치<br> * Kurbernetes 에 대한 이해 (기초 모듈 파악하기) | -- | -- |
 | Kubernetes cluster 이해하기<br> * kubectl 명령어 사용해보기| -- | -- |
 | Kubernetes 에서 deploy 할 때 Docker Private Registry 로 부터 Docker 이미지를 받아 올 수 있도록 만들기<br> * [K8s Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) | -- | -- |
 | RPi3 여러대를 Kubernetes 로 clustering 하기<br> * [RPi3 K8s](https://medium.com/nycdev/k8s-on-pi-9cc14843d43) | -- | -- |
 | Terraform 이해하기<br>...| -- | -- |
+
+ * 2019-9-18 일 상세 일정
+   7:30 - 8:00  개인적으로 공부하던 내용에 대해 궁금한 것 공유 / Github 사용 방법에 대한 공유 (모르는 분들을 위해서)
+   8:00 - 9:10  신규 멤버는 RPi 를 이용해 AP 만드는 것을 진행 해봄 - systemd 구성 이해, iptables, dhcpd, hostapd 등과 같은 network 구성 데몬에 대한 이해
+   9:10 - 9:30  각 조별로 실습 진행 한 내용에 대해 공유 및 질의 응답
+   - Docker Image 는 간단한 Service 를 만들지, Hello-world 를 쓸지, 진행 상태를 보고 결정
 
 ### 스터디 소주제 (스터디를 하면서 만들어 보고 싶은 것)
 
@@ -111,6 +122,9 @@
  * 스터디가 끝나거나, 참여를 못하게 되면, ___남은 금액___ 을 다시 돌려드립니다. (아니면 종강 PARTY!!)
 
 ## 유용한 링크 모음
+
+### Terraform
+  - [Providers](https://www.terraform.io/docs/providers/index.html)
 
 ### Kubernetes
   - [What is Kubernetes](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/)
