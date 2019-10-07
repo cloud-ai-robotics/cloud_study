@@ -14,34 +14,42 @@
 
 
 ## 스터디원이 가지고 있으면 좋을 것 같은 것
-- command line interface 에 익숙하신 분 [필수는 아님...]
-- Cloud computing에 관심이 있으신 분
-- 뭔가 하고싶은 분
+ - Cloud Computing 에 대한 관심
+ - Git 사용법
+ - Linux 에 대한 이해
+ - Network 에 대한 이해
 
-- 아래 장비는 없어도 스터디에 큰 지장은 없지만, 있으면 직접해 볼 수 있습니다.
-  - Raspberry Pi 3 이상
-  - 대용량 SD 카드
-  - 무선 Lan USB (AP 구성시 필요)
+ - 아래 장비는 없어도 스터디에 큰 지장은 없지만, 있으면 직접해 볼 수 있습니다.
+   - Raspberry Pi 3 이상
+   - 대용량 SD 카드
+   - 무선 Lan USB (AP 구성시 필요)
 
 ## 스터디 진도표
 
-|          스터디 내용         |   날짜와 시간     | 스터디 대상 |
-| -------------------------- |:---------------:|-----:|
-| Raspberry Pi 를 이용한 Access Point 구성<br> * Network 기본에 대한 이해<br> * NAT 에 대한 이해<br> * Bridged Network 에 대한 이해 | 2019-9-18 | 신규멤버 |
-| 개발 환경에 Docker 설치<br> * Docker 가 무엇인지 기본에 대한 이해 <br> * Docker 기본 명령어 실습 | -- | -- |
-| Docker Image 만들어 보기<br> * Dockerfile 형식에 대한 이해<br> * Docker 이미지 생성시 필요한 사용자 인증(user credentials) 정보 처리 방법 | 2019-9-18 | 기존멤버 |
-| Docker Private Registry 만들어보기<br> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.| 2019-9-18 | 기존멤버 |
-| 개발 환경에 Kubernetes (minikube) 설치<br> * Kurbernetes 에 대한 이해 (기초 모듈 파악하기) | -- | -- |
-| Kubernetes cluster 이해하기<br> * kubectl 명령어 사용해보기| -- | -- |
-| Kubernetes 에서 deploy 할 때 Docker Private Registry 로 부터 Docker 이미지를 받아 올 수 있도록 만들기<br> * [K8s Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) | -- | -- |
-| RPi3 여러대를 Kubernetes 로 clustering 하기<br> * [RPi3 K8s](https://medium.com/nycdev/k8s-on-pi-9cc14843d43) | -- | -- |
-| Terraform 이해하기<br>...| -- | -- |
+|          스터디 내용         |   날짜와 시간   | 스터디 대상 |
+| ---------------------------- |:---------------:|------------:|
+| Raspberry Pi 를 이용한 Access Point 구성<br/> * Network 기본에 대한 이해<br/> * NAT 에 대한 이해<br/> * Bridged Network 에 대한 이해 | 2019-9-18, 2019-9-25 | 신규멤버 |
+| 개발 환경에 Docker 설치<br/> * Docker 가 무엇인지 기본에 대한 이해 <br/> * Docker 기본 명령어 실습<br/>Docker Image 만들어 보기<br/> * Dockerfile 형식에 대한 이해<br/> * Docker 이미지 생성시 필요한 사용자 인증(user credentials) 정보 처리 방법<br/>Kurbernetes 에 대한 이해 (Microservice architecture introduction) | 2019-10-2 | 신규멤버, 기존멤버 통합 |
+| Docker Private Registry 만들어보기<br/> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.<br/>개발 환경에 Kubernetes 설치<br/> * Kubernetes cluster 이해하기<br/> * kubectl 명령어 사용해보기<br/> * Kubernetes 에서 deploy 할 때 Docker Private Registry 로 부터 Docker 이미지를 받아 올 수 있도록 만들기<br/> * [K8s Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)| 2019-10-8 | 통합멤버 |
+| RPi3 여러대를 Kubernetes 로 Cluster 구성 하기<br> * [RPi3 K8s](https://medium.com/nycdev/k8s-on-pi-9cc14843d43) | -- | -- |
+| Terraform/Ansible 미리보기 | -- | -- |
 
- * 2019-9-18 일 상세 일정
-   7:30 - 8:00  개인적으로 공부하던 내용에 대해 궁금한 것 공유 / Github 사용 방법에 대한 공유 (모르는 분들을 위해서)
-   8:00 - 9:10  신규 멤버는 RPi 를 이용해 AP 만드는 것을 진행 해봄 - systemd 구성 이해, iptables, dhcpd, hostapd 등과 같은 network 구성 데몬에 대한 이해
-   9:10 - 9:30  각 조별로 실습 진행 한 내용에 대해 공유 및 질의 응답
+ * 2019-9-18/25 상세 일정
+   장소: 하비웍스 (사당)
+
+   19:30 - 20:00  개인적으로 공부하던 내용에 대해 궁금한 것 공유 / Github 사용 방법에 대한 공유 (모르는 분들을 위해서)
+   20:00 - 21:10  신규 멤버는 RPi 를 이용해 AP 만드는 것을 진행 해봄 - systemd 구성 이해, iptables, dhcpd, hostapd 등과 같은 network 구성 데몬에 대한 이해
+   21:10 - 21:30  각 조별로 실습 진행 한 내용에 대해 공유 및 질의 응답 (Yunkyu)
    - Docker Image 는 간단한 Service 를 만들지, Hello-world 를 쓸지, 진행 상태를 보고 결정
+
+ * 2019-10-2 상세 일정
+   장소: 스페이스클라우드 (강남 - 22천원)
+
+   19:00 - 21:00  Docker 설치 및 Dockerfile 작성. 각자 편한 언어로 간단한 web service 코드 작성
+   21:00 - 21:30  Dockerfile 및 user credentials 처리 부분에 대한 공유 및 Microservice overview 공유 (anon)
+
+ * 2019-10-8 상세 일정
+   장소: 하비웍스 (사당)
 
 ### 스터디 소주제 (스터디를 하면서 만들어 보고 싶은 것)
 
@@ -72,13 +80,13 @@
 
  * 시간표
 
-   7시 00분 ~ 7시 30분 : 기초 이론에 대하여 궁금한것에 대해 서로 묻고 답하는 시간 
+   7시 30분 ~ 8시 00분 : 기초 이론에 대하여 궁금한것에 대해 서로 묻고 답하는 시간 
                          기초 이론은 Network, Operating System(Linux) 이며,
                          업무하다가, 공부하다가 궁금한것이 있었다면, 처음 30분 동안 서로 질문하고 답하는 시간입니다.
 
-   7시 30분 ~ 8시 50분 : 주별 지정된 주제에 대해 실습을 진행합니다. 
+   8시 00분 ~ 9시 00분 : 주별 지정된 주제에 대해 실습을 진행합니다. 
 
-   8시 50분 ~ 9시 ??분 : 조별 실습 결과 공유 한 후 종료: 어려웠던 점, 배운 점, 궁금한 점등 (궁금한 것은 다음 주에 이어서 논의)
+   9시 00분 ~ 9시 ??분 : 조별 실습 결과 공유 한 후 종료: 어려웠던 점, 배운 점, 궁금한 점등 (궁금한 것은 다음 주에 이어서 논의)
                          종료 시간은 장소를 제공해주시는 대표님 재량에 따라 조금씩 늘어날 수도 있습니다. (필요한 경우라면)
 
 ### 이론 공부 자료: 굳이 아래 자료가 아니어도 상관없습니다. 지금 가지고 있는 책으로 공부하셔도 무방합니다.
@@ -105,20 +113,20 @@
   - 스터디 정규 멤버가 아니어도, 참여할 수 있습니다. 스터디 시간에 지정 장소로 오면 됩니다.
 
 ## Deposit
+
 스터디의 원할한 운영을 위하여 아래와 같이 Deposit 제도를 도입(이번 스터디 전체 Deposit)
 
-- 스터디 2일 전(전 주 일요일)에 Slack을 통해 참여여부 확인
-- 이 후 발생 되는 예외에 대해서는 아래 Rule 적용(가차없음..)
+  - 스터디 2일 전(전 주 일요일)에 Slack을 통해 참여여부 확인
+  - 이 후 발생 되는 예외에 대해서는 아래 Rule 적용(가차없음..)
 
-|     구분           |  직장인     | 학생 |
-| ----------------- |:---------------:|-----:|
-| Deposit | 5만원 | 3만원 |
-| 지각10분 | 2천원 | 1천원 |
-| 지각30분 | 3천원 | 2천원 |
-| 결석 | 5천원 | 4천원 |
+|        구분        |     직장인      |  학생  |
+| ------------------ |:---------------:|-------:|
+|       Deposit      |      5만원      |  3만원 |
+|      지각 10분     |      2천원      |  1천원 |
+|      지각 30분     |      3천원      |  2천원 |
+|        결석        |      5천원      |  4천원 |
 
  * 해당 주에 실습 결과 공유를 못하면, 다음주에 간식 사오기!!!
-
  * 스터디가 끝나거나, 참여를 못하게 되면, ___남은 금액___ 을 다시 돌려드립니다. (아니면 종강 PARTY!!)
 
 ## 유용한 링크 모음
