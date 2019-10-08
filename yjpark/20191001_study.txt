@@ -1,0 +1,33 @@
+
+#도커 설치
+$sudo curl -fsSL https://get.docker.com/ | sudo sh 
+$sudo docker version
+
+# --mount의 타입 지정, 반드시 써쭤야함! syntax=docker/dockerfile:experimental
+#베이스 이미지 지정    FROM <image>:<tag>
+FROM ubuntu:18.04
+
+# Dockerfile을 관리하는 사람의 이름 또는 이메일 정보를 적습니다. 빌드에 딱히 영향을 주지는 않습니다.
+MAINTAINER anon <cloud@futuremobile.net>
+
+# 명령어를 그대로 실행, 업데이트
+RUN apt-get update
+
+# git 인스톨
+RUN apt-get install -y git
+
+# “StrictHostKeyChecking no” 옵션 내용을 ssh_config 파일에 저장한다.
+RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+
+# ?? Ssh Agent에 퍼블릭키를 등록, 데몬이 Agent에 물어보고 실행 
+RUN --mount=type=ssh git clone git@github.com:XYZ && cd XYZ && touch hello && git 
+
+# COPY명령어와 매우 유사하나 몇가지 추가 기능이 있습니다. src에 파일 대신 URL을 입력할 수 있고
+# src에 압축 파일을 입력하는 경우 자동으로 압축을 해제하면서 복사됩니다. 
+add hello && git commit -s -m "Push a file from inside of a container" && git push
+
+# RUN, CMD, ADD, COPY등이 이루어질 기본 디렉토리를 설정
+WORKDIR /tmp
+
+# 도커 컨테이너가 실행되었을 때 실행되는 명령어를 정의, 커멘드 창에 hello world 출력
+CMD ["echo hello world"]
