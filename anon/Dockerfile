@@ -6,4 +6,4 @@ RUN apt-get install -y git nodejs
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 RUN --mount=type=ssh git clone git@github.com:/ai-robotics-kr/cloud_study
 WORKDIR /cloud
-CMD ["node ./webserver.js"]
+CMD ["/usr/bin/node /cloud/cloud_study/anon/webserver.js"]
