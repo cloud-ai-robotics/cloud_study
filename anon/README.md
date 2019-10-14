@@ -1,56 +1,93 @@
-# Docker 설치
+# Docker
 
-## /etc/apt/sources.list.d/docker.list 
+## Docker Repository 추가
+
+ * /etc/apt/sources.list.d/docker.list 파일 생성
 ```
 $ curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 $ echo "deb [arch=armhf] https://download.docker.com/linux/raspbian buster stable" > /etc/apt/sources.list.d/docker.list
 $ apt update
 ```
 
-## Install packages
-If you failed to build a docker image with "Unexpected EOF" error, install docker packages again.
+## Docker 패키지 설치
+
+ * RPi 에서 Docker build 를 할 때, Unexpected EOF 에러가 나는 경우, docker 를 다시 설치한다.
 ```
 $ apt update
 $ apt install docker.io runc
 $ systemctl enable docker
 ```
 
-## /boot/cmdline.txt
- * (없으면) 아래 항목들을 추가
+## Docker 동작 환경 설정
+
+
+ * 부팅 파라미터를 수정: /boot/cmdline.txt (없으면) 아래 항목들을 추가
 ```
 cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1
 ```
 
-## Swap off
+### Swap memory 를 모두 Disable
+
 ```
 $ dphys-swapfile swapoff
 $ dphys-swapfile uninstall
-```
-Disable swap permanently
-```
 $ update-rc.d dphys-swapfile remove
 $ vi /etc/dphys-swapfile # CONF_SWAP_SIZE=0
 ```
 
-# Docker
+### Docker 설정 파일 수정
  * /etc/docker/damon.json 파일 수정
    - container 들이 사용할 사설망을 지정
+```
+{
+   "exec-opts": ["native.cgroupdriver=systemd"],
+   "log-driver": "json-file",
+   "log-opts": {
+       "max-size": "100m"
+   },
+   "storage-driver": "overlay2",
+   "bip": "192.168.1.1/24",
+   "ipv6": false
+}
+```
 
-## Dockerfile
+## Docker Image 만들기
 
-## `docker build`
+## Dockerfile 작성
+
+ * 첫 줄 syntax 커멘트는 Docker 를 빌드할 때, 아직 정식 포함되지 않은 기능을 사용할 수 있도록 Toggle 시키는 기능임
+```
+# syntax=docker/dockerfile:experimental
+FROM ubuntu:18.04
+MAINTAINER anon <cloud@futuremobile.net>
+RUN apt-get update
+RUN apt-get install -y git nodejs
+RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+RUN --mount=type=ssh git clone git@github.com:/ai-robotics-kr/cloud_study
+WORKDIR /cloud
+CMD ["/usr/bin/node /cloud/cloud_study/anon/service/webserver.js"]
+```
+ 1. ubuntu 18.04 이미지를 base 로 해서, package repository 를 갱신하고, git 과 nodejs 패키지를 설치한다.
+ 2. ssh client 설정에 Host key checking 옵션을 끈다. (최초 접속시 추가하겠냐고 묻지 않게 함)
+ 3. (--mount)[https://docs.docker.com/storage/bind-mounts/] 옵션에 (type=ssh)[https://docs.docker.com/develop/develop-images/build_enhancements/] 기능을 사용해서, Host 의 SSH credentials 에 접근할 수 있게 한다. (참고: Using SSH to access private data in builds)
+ 4. webserver 를 실행시킨다.
+
+## 이미지 만들기
+(Build Enhancements for Docker)[https://docs.docker.com/develop/develop-images/build_enhancements/] 의 "DOCKER_BUILDKIT" 환경 변수에 대한 설명을 참고할 것.
 ```
 $ DOCKER_BUILDKIT=1 docker build . -t git:0.3 --ssh default
 ```
 
-## `docker run`
+## Container 실행시키기
+
 ```
 $ docker run --name hello-nginx3 -d -p 8080:80 -v /root/example/data:/data hello:0.1
 ```
 
 # Kubernetes
 
-## install
+## 패키지 설치
+
 ```
 $ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 $ echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
@@ -58,9 +95,16 @@ $ apt-get update -q
 $ apt-get install -qy kubeadm
 ```
 
-## kubeadm init
+## DNS 정리
+
+ * kubernetes 를 초기화 하기 전에, 각 Node 들의 이름을 잘 정리해둔다.
+
+## kubernetes 초기화
+
+  * kubeadm init 할 때 옵션들을 잘 챙겨볼것. 또는 config.yaml 파일을 만들어서 적용(이게 최신 방법임)
+
 ```
-raspberrypi:~/kubernetes# kubeadm init
+raspberrypi:~/kubernetes# kubeadm init --pod-network-cidr=10.0.0.0/16
 [init] Using Kubernetes version: v1.16.1
 [preflight] Running pre-flight checks
         [WARNING SystemVerification]: this Docker version is not on the list of validated versions: 19.03.2. Latest validated version: 18.09
@@ -206,6 +250,7 @@ network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 �
 추가된 worker node 가 not ready 상태로 남아 있게 됨.
 
 
+### Weave net
 일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
 """반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
 """RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
@@ -240,6 +285,12 @@ search localdomain service.ns.svc.cluster.local
  * weavenet 삭제하기
 ```
 $ kubectl -n kube-system delete -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
+
+### Flannel
+Flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
+```
+$ kubeadm init --pod-network-cidr=10.0.0.0/16
 ```
 
 ## Persistent Volume (Claim)
@@ -334,3 +385,57 @@ ethernet 으로 연결되는 망 (rpi2) 에 대한 masquerading 을 위해 NAT t
 -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A FORWARD -i eth0 -o wlan0 -j ACCEPT
 ```
+
+## local DNS 서버 설정 (feat. dnsmasq)
+
+마지막 줄에 domain name 과 ip 추가
+```
+address=/master.rpi.nicesj.com/192.168.0.6
+address=/master.rpi.nicesj.com/10.0.0.1
+address=/master.rpi.nicesj.com/10.0.1.1
+address=/worker0.rpi.nicesj.com/10.0.1.24
+```
+
+/etc/default/dnsmasq 에 port 번호 옵션 추가
+```
+# This file has five functions: 
+# 1) to completely disable starting dnsmasq, 
+# 2) to set DOMAIN_SUFFIX by running `dnsdomainname` 
+# 3) to select an alternative config file
+#    by setting DNSMASQ_OPTS to --conf-file=<file>
+# 4) to tell dnsmasq to read the files in /etc/dnsmasq.d for
+#    more configuration variables.
+# 5) to stop the resolvconf package from controlling dnsmasq's
+#    idea of which upstream nameservers to use.
+# For upgraders from very old versions, all the shell variables set 
+# here in previous versions are still honored by the init script
+# so if you just keep your old version of this file nothing will break.
+
+#DOMAIN_SUFFIX=`dnsdomainname`
+#DNSMASQ_OPTS="--conf-file=/etc/dnsmasq.alt"
+DNSMASQ_OPTS="--port=53"
+
+# Whether or not to run the dnsmasq daemon; set to 0 to disable.
+ENABLED=1
+
+# By default search this drop directory for configuration options.
+# Libvirt leaves a file here to make the system dnsmasq play nice.
+# Comment out this line if you don't want this. The dpkg-* are file
+# endings which cause dnsmasq to skip that file. This avoids pulling
+# in backups made by dpkg.
+CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
+
+# If the resolvconf package is installed, dnsmasq will use its output 
+# rather than the contents of /etc/resolv.conf to find upstream 
+# nameservers. Uncommenting this line inhibits this behaviour.
+# Note that including a "resolv-file=<filename>" line in 
+# /etc/dnsmasq.conf is not enough to override resolvconf if it is
+# installed: the line below must be uncommented.
+#IGNORE_RESOLVCONF=yes
+```
+
+Reference: (Custom domains with dnsmasq)[https://github.com/RMerl/asuswrt-merlin/wiki/Custom-domains-with-dnsmasq]
+
+# References
+
+ * (CoreDNS)[https://coredns.io/]: Kubernetes cluster 안의 Pod 들이 참고하는 DNS Service
