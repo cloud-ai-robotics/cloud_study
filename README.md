@@ -62,7 +62,7 @@
 
 ### 시간과 장소
 
-- 시간 : 매주 수요일 19:30 ~ 21:30 (2019.07 ~ )
+- 시간 : 매주 화요일 19:30 ~ 21:30 (2019.07 ~ )
 - 장소 : 사당역 하비웍스[사당역 범주 빌딩]  (변경 시 사전 공유)
 
 ### 연락처
@@ -131,6 +131,9 @@
 
 ## 유용한 링크 모음
 
+### Docker
+  - [Docker for IT Pros and System Administrators](https://training.play-with-docker.com/ops-stage1/)
+
 ### Terraform
   - [Providers](https://www.terraform.io/docs/providers/index.html)
 
@@ -138,6 +141,7 @@
   - [What is Kubernetes](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/)
   - [Docker Kubernetes Service](https://www.docker.com/products/kubernetes)
   - [Kubernetes 기초 모듈](https://kubernetes.io/ko/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/)
+  - [Kubernetes](https://www.level-up.one/kubernetes-networking-pods-levelup/)
 
 ### Understanding Container Technology
   - [LXC vs Docker](https://pasztor.at/blog/lxc-vs-docker)

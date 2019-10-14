@@ -2,7 +2,9 @@
 
 ## /etc/apt/sources.list.d/docker.list 
 ```
-deb [arch=armhf] https://download.docker.com/linux/raspbian buster stable
+$ curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+$ echo "deb [arch=armhf] https://download.docker.com/linux/raspbian buster stable" > /etc/apt/sources.list.d/docker.list
+$ apt update
 ```
 
 ## Install packages
@@ -129,6 +131,117 @@ kubeadm join 192.168.0.6:6443 --token uk3kdd.3ypc9mpij86wtg31 \
 raspberrypi:~/kubernetes#
 ```
 
+kubeadm join 을 하기전에 worker node 의 hostname 을 알맞게 수정해줘야 한다.
+```
+$ cat /etc/hosts
+10.0.1.24 worker0
+$ hostnamectl
+   Static hostname: raspberrypi
+         Icon name: computer
+        Machine ID: e1c2b31c295d4657a3dbab8a879a71a3
+           Boot ID: 5e048c32a2494d5589de6299526e31da
+  Operating System: Raspbian GNU/Linux 10 (buster)
+            Kernel: Linux 4.19.66-v7+
+      Architecture: arm
+```
+
+Worker node 에서 join 을 할 때, 오류가 나는 경우, -v=6 옵션을 붙여서 상세 로그를 확인할 수 있다.
+```
+$ kubeadm join 192.168.0.6:6443 --token uk3kdd.3ypc9mpij86wtg31 \
+    --discovery-token-ca-cert-hash sha256:9ef15db5970a8c9987190f6f758394b9db304abaa56127c5306d67e274ac4578 -v=6
+```
+
+만약 토큰이 오래된 경우, master node 에서 토큰을 갱신한다.
+```
+$ kubeadm token create
+```
+
+join 명령어 찾는 방법
+```
+master:~/cloud_study/anon# kubeadm token create --print-join-command
+kubeadm join 192.168.0.6:6443 --token u3fqr3.xesi5amthrd4mc61     --discovery-token-ca-cert-hash sha256:95155c5cd47f146405332427088f1118b430908dfda8017fb8c0144c582e84d7
+```
+
+### Worker node initialization
+```
+nicesj.park@raspberrypi:~ # kubeadm join 192.168.0.6:6443 --token qp7xq6.an1s8n3x1advuln5 \
+>     --discovery-token-ca-cert-hash sha256:af8d65f8c1775042adb18da87631dafec87b324a3d6685fdb1b5dbf6829a1417
+[preflight] Running pre-flight checks
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
+[kubelet-start] Downloading configuration for the kubelet from the "kubelet-config-1.16" ConfigMap in the kube-system namespace
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Activating the kubelet service
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+```
+
+Worker node 가 10.0.1.x network (ethernet interface 에 구성) 에 있기 때문에, join 을 할 때, 10.0.1.1 gateway API 로 시도 했더니,
+인증되지 않은 주소라고 해서, 이것 저것 찾아보다가,. 어짜피 worker node network 에서도 192.168.0.6 으로 접근 할 수 있기 때문에,
+그냥 했더니.. 잘 됨. 그래도 궁금한 것 하나는 남음
+
+> kubernetes init 을 할 때, cluster IP 인증 목록은 어떻게 변경할 수 있는거지?
+> Reference: (Invalid X.509 Certificate for the K8s master)[https://stackoverflow.com/questions/46360361/invalid-x509-certificate-for-kubernetes-master]
+
+### master node 에서 node 목록 확인하기
+```
+$ kubectl get node
+   NAME      STATUS  ROLES  AGE   VERSION
+raspberrypi NotReady master 9m32s v1.16.1
+```
+
+### Addon 설치하기
+
+Kubernetes Cluster 가 구성되면 필요한 경우, 추가 구성 요소들을 설치(Deploy) 한다.
+
+Reference: (Addons)[https://kubernetes.io/docs/concepts/cluster-administration/addons/]
+
+network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 되며,
+추가된 worker node 가 not ready 상태로 남아 있게 됨.
+
+
+일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
+"""반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
+"""RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
+```
+raspberrypi:~/cloud_study# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+serviceaccount/weave-net created
+clusterrole.rbac.authorization.k8s.io/weave-net created
+clusterrolebinding.rbac.authorization.k8s.io/weave-net created
+role.rbac.authorization.k8s.io/weave-net created
+rolebinding.rbac.authorization.k8s.io/weave-net created
+daemonset.apps/weave-net created
+
+raspberrypi:~/cloud_study# kubectl get pods -n kube-system
+NAME                       READY   STATUS              RESTARTS   AGE
+coredns-5644d7b6d9-hzssx   0/1     Pending             0          80m
+coredns-5644d7b6d9-kvqmz   0/1     Pending             0          80m
+kube-proxy-fk6xz           1/1     Running             0          28m
+weave-net-4l2xs            0/2     ContainerCreating   0          108s
+```
+
+모두 설치가 끝난 후
+```
+$ journalctl -xe -f
+10월 13 09:53:15 master.rpi.nicesj.com kubelet[4208]: E1013 09:53:15.172810    4208 dns.go:135] Nameserver limits were exceeded, some nameservers have been omitted, the applied nameserver line is: 10.0.0.1 10.0.1.1 168.126.63.1
+```
+이런 에러가 나는 경우,
+/etc/resolve.conf 에 아래 줄을 추가한다.
+```
+search localdomain service.ns.svc.cluster.local
+```
+
+ * weavenet 삭제하기
+```
+$ kubectl -n kube-system delete -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
+
 ## Persistent Volume (Claim)
 
 ### Persistent Volume
@@ -176,3 +289,48 @@ $ kubectl apply -f myNFS-Caim.yaml
 
  StorageClass 가 없는 경우 Default 를 기준으로,
  AccessMode 와 Request Storage Size 를 이용해서, Persistent Volume 을 찾는다.
+
+# 기타 (Raspberry Pi)
+
+## DHCP Client daemon 수정 (feat. dhcpcd)
+```
+$ cat /etc/dhcpcd.conf
+...
+denyinterfaces wlan1
+denyinterfaces eth0
+...
+```
+wlan1 과 eth0 에 대해서는 dhcp 로 부터 ip 받아오는 것을 방지함
+
+## DHCP 서버 설정 (feat. dnsmasq)
+
+```
+$ cat /etc/dnsmasq.conf
+interface=wlan1
+interface=eth0
+listen-address=10.0.0.1
+listen-address=10.0.1.1
+bind-interfaces
+bogus-priv
+dhcp-range=10.0.0.3,10.0.0.250,255.255.255.0,24h
+dhcp-range=10.0.1.3,10.0.1.250,255.255.255.0,24h
+server=8.8.8.8
+server=8.8.4.4
+no-resolv
+```
+wlan1 네트워크 대역은 10.0.0.1
+eth0 네트워크 대역은 10.0.1.1
+
+현재 eth0 은 rpi2 와 연결 시켰고,
+wlan1 은 AP 로 사용하고 있음
+
+```
+$ systemctl enable dnsmasq
+```
+
+## eth0 NAT table 에 추가하기
+ethernet 으로 연결되는 망 (rpi2) 에 대한 masquerading 을 위해 NAT table 을 아래와 같이 수정(추가)
+```
+-A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -i eth0 -o wlan0 -j ACCEPT
+```
