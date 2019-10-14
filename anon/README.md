@@ -206,6 +206,7 @@ network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 �
 추가된 worker node 가 not ready 상태로 남아 있게 됨.
 
 
+### Weave net
 일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
 """반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
 """RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
@@ -240,6 +241,12 @@ search localdomain service.ns.svc.cluster.local
  * weavenet 삭제하기
 ```
 $ kubectl -n kube-system delete -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
+
+### Flannel
+Flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
+```
+$ kubeadm init --pod-network-cidr=10.0.0.0/16
 ```
 
 ## Persistent Volume (Claim)
@@ -334,3 +341,53 @@ ethernet 으로 연결되는 망 (rpi2) 에 대한 masquerading 을 위해 NAT t
 -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A FORWARD -i eth0 -o wlan0 -j ACCEPT
 ```
+
+## local DNS 서버 설정 (feat. dnsmasq)
+
+마지막 줄에 domain name 과 ip 추가
+```
+address=/master.rpi.nicesj.com/192.168.0.6
+address=/master.rpi.nicesj.com/10.0.0.1
+address=/master.rpi.nicesj.com/10.0.1.1
+address=/worker0.rpi.nicesj.com/10.0.1.24
+```
+
+/etc/default/dnsmasq 에 port 번호 옵션 추가
+```
+# This file has five functions: 
+# 1) to completely disable starting dnsmasq, 
+# 2) to set DOMAIN_SUFFIX by running `dnsdomainname` 
+# 3) to select an alternative config file
+#    by setting DNSMASQ_OPTS to --conf-file=<file>
+# 4) to tell dnsmasq to read the files in /etc/dnsmasq.d for
+#    more configuration variables.
+# 5) to stop the resolvconf package from controlling dnsmasq's
+#    idea of which upstream nameservers to use.
+# For upgraders from very old versions, all the shell variables set 
+# here in previous versions are still honored by the init script
+# so if you just keep your old version of this file nothing will break.
+
+#DOMAIN_SUFFIX=`dnsdomainname`
+#DNSMASQ_OPTS="--conf-file=/etc/dnsmasq.alt"
+DNSMASQ_OPTS="--port=53"
+
+# Whether or not to run the dnsmasq daemon; set to 0 to disable.
+ENABLED=1
+
+# By default search this drop directory for configuration options.
+# Libvirt leaves a file here to make the system dnsmasq play nice.
+# Comment out this line if you don't want this. The dpkg-* are file
+# endings which cause dnsmasq to skip that file. This avoids pulling
+# in backups made by dpkg.
+CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
+
+# If the resolvconf package is installed, dnsmasq will use its output 
+# rather than the contents of /etc/resolv.conf to find upstream 
+# nameservers. Uncommenting this line inhibits this behaviour.
+# Note that including a "resolv-file=<filename>" line in 
+# /etc/dnsmasq.conf is not enough to override resolvconf if it is
+# installed: the line below must be uncommented.
+#IGNORE_RESOLVCONF=yes
+```
+
+Reference: (Custom domains with dnsmasq)[https://github.com/RMerl/asuswrt-merlin/wiki/Custom-domains-with-dnsmasq]
