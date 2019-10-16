@@ -208,8 +208,13 @@ network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 �
 
 ### Weave net
 일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
+
 """반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
 """RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
+
+> docker inspect 로 확인해보면, amd64 architecture 로 설치되어 있어서, RPi 에서 제대로 동작을하지 않음
+> flannel 로 갈아탔음.
+
 ```
 raspberrypi:~/cloud_study# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 serviceaccount/weave-net created
@@ -244,10 +249,25 @@ $ kubectl -n kube-system delete -f "https://cloud.weave.works/k8s/net?k8s-versio
 ```
 
 ### Flannel
-Flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
+
+flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
 ```
-$ kubeadm init --pod-network-cidr=10.0.0.0/16
+$ kubeadm init --pod-network-cidr=10.1.0.0/16
 ```
+
+#### 설치하기
+
+RPi (ARM64) 에 설치하는 경우, kube-flannel.yml 파일의 amd64 를 arm64 로 변경해줘야 한다.
+
+```
+$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl apply -f -
+```
+
+#### 삭제하기
+```
+$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl delete -f -
+```
+
 
 ## Persistent Volume (Claim)
 
@@ -344,7 +364,7 @@ ethernet 으로 연결되는 망 (rpi2) 에 대한 masquerading 을 위해 NAT t
 
 ## local DNS 서버 설정 (feat. dnsmasq)
 
-마지막 줄에 domain name 과 ip 추가
+ * 마지막 줄에 domain name 과 ip 추가
 ```
 address=/master.rpi.nicesj.com/192.168.0.6
 address=/master.rpi.nicesj.com/10.0.0.1
@@ -352,7 +372,7 @@ address=/master.rpi.nicesj.com/10.0.1.1
 address=/worker0.rpi.nicesj.com/10.0.1.24
 ```
 
-/etc/default/dnsmasq 에 port 번호 옵션 추가
+ * /etc/default/dnsmasq 에 port 번호 옵션 추가
 ```
 # This file has five functions: 
 # 1) to completely disable starting dnsmasq, 
@@ -390,4 +410,36 @@ CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
 #IGNORE_RESOLVCONF=yes
 ```
 
-Reference: (Custom domains with dnsmasq)[https://github.com/RMerl/asuswrt-merlin/wiki/Custom-domains-with-dnsmasq]
+ Reference: (Custom domains with dnsmasq)[https://github.com/RMerl/asuswrt-merlin/wiki/Custom-domains-with-dnsmasq]
+
+ * systemd-resolved 설치
+
+  /etc/resolv.conf 파일에 127.0.0.x 와 같이 localhost 가 지정되지 않도록 수정 필요 (localhost 로 지정되면, CoreDNS 에서 loop detection 으로 에러가 발생함)
+
+  /etc/systemd/resovled.conf
+```
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+#
+# Entries in this file show the compile time defaults.
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See resolved.conf(5) for details
+
+[Resolve]
+DNS=10.0.1.1
+#FallbackDNS=
+#Domains=
+#LLMNR=yes
+#MulticastDNS=yes
+#DNSSEC=allow-downgrade
+#DNSOverTLS=no
+#Cache=yes
+#DNSStubListener=yes
+#ReadEtcHosts=yes
+```
