@@ -1,12 +1,14 @@
 # AI Robotics KR - Cloud Computing 스터디 Repository
 
-![image_link](https://github.com/ai-robotics-kr/cloud_study/blob/master/images/docker-logo.png?raw=true | width=100)
-![image_link](https://github.com/ai-robotics-kr/cloud_study/blob/master/images/kubernetes.png?raw=true | width=100)
-![image_link](https://github.com/ai-robotics-kr/cloud_study/blob/master/images/terraform.png?raw=true | width=100)
+![image_link](https://github.com/ai-robotics-kr/cloud_study/blob/master/images/docker-logo.png?raw=true|width=100)
+
+![image_link](https://github.com/ai-robotics-kr/cloud_study/blob/master/images/kubernetes.png?raw=true|width=100)
+
+![image_link](https://github.com/ai-robotics-kr/cloud_study/blob/master/images/terraform.png?raw=true|width=100)
 
 ## 스터디 소개:
 
-- 목적: Cloud & Fog Computing 이해하기
+- 목적: 실습 위주의 스터디로, Kubernetes/Helm chart 등과 같은 cluster infra-structure 를 RPi 나 일반 PC 여러대를 이용해 직접 구성하면서 구조 및 동작 방식을 이해한다.
 - [Hands-on Cloud & Fog Computing 도서](https://github.com/ai-robotics-kr/cloud_hands_on) 출판 
 - [해커톤](https://github.com/ai-robotics-kr/cloud_hackathon) 개최
 - 기간: 2019년 7월 ~ 
@@ -32,7 +34,7 @@
 | 개발 환경에 Docker 설치<br/> * Docker 가 무엇인지 기본에 대한 이해 <br/> * Docker 기본 명령어 실습<br/>Docker Image 만들어 보기<br/> * Dockerfile 형식에 대한 이해<br/> * Docker 이미지 생성시 필요한 사용자 인증(user credentials) 정보 처리 방법<br/>Kurbernetes 에 대한 이해 (Microservice architecture introduction) | 2019-10-2 | 신규멤버, 기존멤버 통합 |
 | Docker Private Registry 만들어보기<br/> * Docker image 를 관리하기 위한 Private Registry 를 구성해본다.<br/>개발 환경에 Kubernetes 설치<br/> * Kubernetes cluster 이해하기<br/> * kubectl 명령어 사용해보기<br/> * Kubernetes 에서 deploy 할 때 Docker Private Registry 로 부터 Docker 이미지를 받아 올 수 있도록 만들기<br/> * [K8s Private Registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)| 2019-10-8 | 통합멤버 |
 | RPi3 여러대를 Kubernetes 로 Cluster 구성 하기<br> * [RPi3 K8s](https://medium.com/nycdev/k8s-on-pi-9cc14843d43) | 2019-10-15 | 통합멤버 |
-| Terraform/Ansible 미리보기 | 2019-10-22 | 통합멤버 |
+| Terraform/Ansible, Helm 미리보기 | 2019-10-22 | 통합멤버 |
 
  * 2019-9-18/25 상세 일정
    장소: 하비웍스 (사당)
@@ -65,6 +67,7 @@
  2. AI Chatbot Service Docker 이미지를 만들어 서비스 개발 (Docker, K8s, Terraform 모두 적용)
  3. 여러대의 Rapsberry Pi 들을 Node 로 구성하여 Kubernetes 로 관리
  4. Kubernetes & Docker 활용 Service 배포 및 Enabling 자동화
+ 5. 아이디어 모집중입니다.
  
 ## 클라우드 컴퓨팅 스터디 안내
 
@@ -81,29 +84,43 @@
 
 ### 스터디 형식: 실습 중심, 발표 자료 준비 필요 없음, 발표자 없음.
 
- * 조 별 실습
+ * 현재까지 총 3 라운드로 계획 (예상)
+   - Round 1 (진행중)
+     기간: 9월 18일 ~ 10월 22일
+     목표: 기본 환경 구축 : K8s, Helm, Terraform 등을 사용할 수 있는 실제 환경 구축
+     과정: AccessPoint 만들기 -> Docker 설치 -> K8s 설치 -> Terraform 및 Helm 설치
 
-   참여 인원에 따라, 조를 편성<br>
-   2인 1조 형식으로 진행, 스터디 정규 멤버가 아닌 경우, 임의의 조에 편성되어 같이 실습합니다.
+   - Round 2 (진행 예정)
+     기간: 10월 29일 ~ 미정
+     목표: 내부 동작 방식 이해 및 이론적 기초 쌓기
+     과정: Network 이해 -> Containerization 및 Virutalization 이해 -> K8s 각 모듈에 대한 이해 및 동작 방식 이해
+
+   - Round 3 (진행 예정)
+     기간: 미정 ~ 미정
+     목표: 실제 구축 가능한 서비스 아이디어를 실현
+     과정: 미정
+     기타: 서비스 개발에 관심있는 스터디 원 추가 모집하여 두 파트로 만들어서 진행
+           - Infra 개발 팀
+           - 서비스 개발 팀
 
  * 시간표
 
-   7시 30분 ~ 8시 00분 : 기초 이론에 대하여 궁금한것에 대해 서로 묻고 답하는 시간 
+   __7시 30분 ~ 8시 00분__ : 기초 이론에 대하여 궁금한것에 대해 서로 묻고 답하는 시간 
                          기초 이론은 Network, Operating System(Linux) 이며,
                          업무하다가, 공부하다가 궁금한것이 있었다면, 처음 30분 동안 서로 질문하고 답하는 시간입니다.
 
-   8시 00분 ~ 9시 00분 : 주별 지정된 주제에 대해 실습을 진행합니다. 
+   __8시 00분 ~ 9시 00분__ : 주별 지정된 주제에 대해 실습을 진행합니다. 
 
-   9시 00분 ~ 9시 ??분 : 조별 실습 결과 공유 한 후 종료: 어려웠던 점, 배운 점, 궁금한 점등 (궁금한 것은 다음 주에 이어서 논의)
+   __9시 00분 ~ 9시 ??분__ : 조별 실습 결과 공유 한 후 종료: 어려웠던 점, 배운 점, 궁금한 점등 (궁금한 것은 다음 주에 이어서 논의)
                          종료 시간은 장소를 제공해주시는 대표님 재량에 따라 조금씩 늘어날 수도 있습니다. (필요한 경우라면)
 
 ### 이론 공부 자료: 굳이 아래 자료가 아니어도 상관없습니다. 지금 가지고 있는 책으로 공부하셔도 무방합니다.
 
- * (완벽한 인프라 구축을 위한 Docker)[https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=166082298&start=slayer]
- * (Infrastructure as Code)[http://shop.oreilly.com/product/0636920039297.do]
- * (Beginning Linux Programming)[https://doc.lagout.org/operating%20system%20/linux/Beginning%20Linux%20Programming%2C%204%20Ed.pdf]
- * (모두의 도커 자료) http://www.pyrasis.com/private/2014/11/30/publish-docker-for-the-really-impatient-book
- * (도커 한글문서/ 영상 모음) http://documents.docker.co.kr/
+ * [완벽한 인프라 구축을 위한 Docker](https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=166082298&start=slayer)
+ * [Infrastructure as Code](http://shop.oreilly.com/product/0636920039297.do)
+ * [Beginning Linux Programming](https://doc.lagout.org/operating%20system%20/linux/Beginning%20Linux%20Programming%2C%204%20Ed.pdf)
+ * [모두의 도커 자료](http://www.pyrasis.com/private/2014/11/30/publish-docker-for-the-really-impatient-book)
+ * [도커 한글문서/ 영상 모음](http://documents.docker.co.kr/)
  * `...`
 
 ### 질의 응답: 
