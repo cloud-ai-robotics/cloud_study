@@ -206,8 +206,9 @@ raspberrypi:~/kubernetes#
 
  * 일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
 
-"""반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
-"""RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
+__반드시, weavenet 을 먼저 설치하고, workernode 를 추가할것__
+
+__RPi에서 crash 가 났음: `kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1"`__
 
 ```
 raspberrypi:~/cloud_study# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
