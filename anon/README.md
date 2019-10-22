@@ -343,6 +343,25 @@ Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
 $ kubeadm token create
 ```
 
+### Addon 설치하기
+
+Kubernetes Cluster 가 구성되면 필요한 경우, 추가 구성 요소들을 설치(Deploy) 한다.
+
+Reference: (Addons)[https://kubernetes.io/docs/concepts/cluster-administration/addons/]
+
+network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 되며,
+추가된 worker node 가 not ready 상태로 남아 있게 됨.
+
+
+### Weave net
+일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
+
+"""반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
+"""RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
+
+> docker inspect 로 확인해보면, amd64 architecture 로 설치되어 있어서, RPi 에서 제대로 동작을하지 않음
+> flannel 로 갈아탔음.
+
  * join 명령어 찾는 방법
 ```
 master:~/cloud_study/anon# kubeadm token create --print-join-command
@@ -361,6 +380,27 @@ $ kubectl get node
    NAME      STATUS  ROLES  AGE   VERSION
 raspberrypi NotReady master 9m32s v1.16.1
 ```
+
+### Flannel
+
+flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
+```
+$ kubeadm init --pod-network-cidr=10.1.0.0/16
+```
+
+#### 설치하기
+
+RPi (ARM64) 에 설치하는 경우, kube-flannel.yml 파일의 amd64 를 arm64 로 변경해줘야 한다.
+
+```
+$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl apply -f -
+```
+
+#### 삭제하기
+```
+$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl delete -f -
+```
+
 
 ## Persistent Volume (Claim)
 
@@ -514,6 +554,40 @@ CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
 # /etc/dnsmasq.conf is not enough to override resolvconf if it is
 # installed: the line below must be uncommented.
 #IGNORE_RESOLVCONF=yes
+```
+
+ Reference: (Custom domains with dnsmasq)[https://github.com/RMerl/asuswrt-merlin/wiki/Custom-domains-with-dnsmasq]
+
+ * systemd-resolved 설치
+
+  /etc/resolv.conf 파일에 127.0.0.x 와 같이 localhost 가 지정되지 않도록 수정 필요 (localhost 로 지정되면, CoreDNS 에서 loop detection 으로 에러가 발생함)
+
+  /etc/systemd/resovled.conf
+```
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+#
+# Entries in this file show the compile time defaults.
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See resolved.conf(5) for details
+
+[Resolve]
+DNS=10.0.1.1
+#FallbackDNS=
+#Domains=
+#LLMNR=yes
+#MulticastDNS=yes
+#DNSSEC=allow-downgrade
+#DNSOverTLS=no
+#Cache=yes
+#DNSStubListener=yes
+#ReadEtcHosts=yes
 ```
 
 # References
