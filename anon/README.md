@@ -120,10 +120,65 @@ $ docker login https://localhost:5000
 ## docker 에 이미지 push 해보기
 ```
 $ docker pull ubuntu:18.04
-$ docker tag ubuntu:18.04 registry.nicesj.com/ubuntu18.04
-$ docker push registry.nicesj.com/ubuntu18.04
-$ docker pull registry.nicesj.com/ubuntu18.04
+$ docker tag ubuntu:18.04 registry.nicesj.com/ubuntu:18.04
+$ docker push registry.nicesj.com/ubuntu:18.04
+$ docker pull registry.nicesj.com/ubuntu:18.04
+#
+# Dockerfile 빌드를 위해 dockerfile:experimental image 도 push
+#
+$ docker pull docker.io/docker/dockerfile:experimental
+$ docker tag docker/dockerfile:experimental registry.nicesj.com/docker/dockerfile:experimental
+$ docker push registry.nicesj.com/dockerfile:experimental
 ```
+
+## 기존 Dockerfile 을 빌드해서 private registry 에 넣어보기
+```
+#
+# 빌드하기, tag 를 그을때 registry.nicesj.com/hello-world:0.1 이라고 하면 아래 태그 긋기를 다시 안해도 되는걸까요?
+#
+$ DOCKER_BUILDKIT=1 docker build . -t hello-world:0.1 --ssh default 
+[+] Building 71.8s (14/14) FINISHED
+ => [internal] load .dockerignore                                                                                                                                                1.5s
+ => => transferring context: 2B                                                                                                                                                  0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                             0.5s
+ => => transferring dockerfile: 474B                                                                                                                                             0.0s
+ => resolve image config for docker.io/docker/dockerfile:experimental                                                                                                            0.0s
+ => CACHED docker-image://docker.io/docker/dockerfile:experimental                                                                                                               0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                             1.0s
+ => => transferring dockerfile: 474B                                                                                                                                             0.0s
+ => [internal] load .dockerignore                                                                                                                                                0.0s
+ => [internal] load metadata for registry.nicesj.com/ubuntu:18.04                                                                                                                0.0s
+ => [1/6] FROM registry.nicesj.com/ubuntu:18.04                                                                                                                                  0.0s
+ => CACHED [2/6] RUN apt-get update                                                                                                                                              0.0s
+ => CACHED [3/6] RUN apt-get install -y git nodejs                                                                                                                               0.0s
+ => CACHED [4/6] RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config                                                                                                      0.0s
+ => CACHED [5/6] RUN --mount=type=ssh git clone git@github.com:/ai-robotics-kr/cloud_study && mv cloud_study/anon/service/webserver.js /cloud                                    0.0s
+ => [6/6] RUN apt remove -y git                                                                                                                                                 25.8s
+ => exporting to image                                                                                                                                                          38.4s
+ => => exporting layers                                                                                                                                                         37.9s
+ => => writing image sha256:0472e3d1d059424f7d4ab5abb8b1654f86d5c527cbe70aa08c94cb4ccd34b4a9                                                                                     0.0s
+ => => naming to docker.io/library/hello-world:0.1                                                                                                                               0.0s
+#
+# 태그 긋기
+#
+$ docker tag hello-world:0.1 registry.nicesj.com/hello-world:0.1
+#
+# push 하기
+#
+$ docker push registry.nicesj.com/hello-world:0.1
+The push refers to repository [registry.nicesj.com/hello-world]
+0e1202019357: Pushed
+03936511f26e: Pushed
+abb8b2ee0c22: Pushed
+d79f655bec49: Pushed
+fc8d18b74b84: Pushed
+b4337dcf41dd: Mounted from ubuntu
+bb5cec76f6eb: Mounted from ubuntu
+660db4a2f7fb: Mounted from ubuntu
+4a1049d3ae45: Mounted from ubuntu
+0.1: digest: sha256:dcc2bf8583bac15535c16137c8527aa156c4288d94fbe065349a41946aa21405 size: 2203
+```
+
 
 ## self-signed certificate 를 신뢰하도록 추가
 
@@ -141,6 +196,34 @@ $ docker pull registry.nicesj.com/ubuntu18.04
 >
 > sudo update-ca-certificates --fresh
 >
+
+## docker registry 내용 확인하기
+
+```
+# registry 가 동작중인 container Id 를 찾는다.
+$ docker ps
+CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                    NAMES
+44656edcb0c3        ef3b5d63729b           "/opt/bin/flanneld -…"   9 hours ago         Up 9 hours                                   k8s_kube-flannel_kube-flannel-ds-arm-5xw4x_kube-system_047eacc5-b887-4e08-b7e5-a0f96c980d3a_6
+9b966978f24e        56b69fd5e66b           "/usr/local/bin/kube…"   9 hours ago         Up 9 hours                                   k8s_kube-proxy_kube-proxy-vcjrv_kube-system_874a86b2-9536-40ca-a857-df428d7b8db9_5
+235167eafa7a        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-flannel-ds-arm-5xw4x_kube-system_047eacc5-b887-4e08-b7e5-a0f96c980d3a_5
+8d638c4fd8b8        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-proxy-vcjrv_kube-system_874a86b2-9536-40ca-a857-df428d7b8db9_5
+a50753985be4        85ba11732b25           "kube-controller-man…"   9 hours ago         Up 9 hours                                   k8s_kube-controller-manager_kube-controller-manager-master.rpi.nicesj.com_kube-system_42cb3c7ba289276039d9a6a8ec36bf63_6
+b2d7c1afd7e2        ad0038846086           "etcd --advertise-cl…"   9 hours ago         Up 9 hours                                   k8s_etcd_etcd-master.rpi.nicesj.com_kube-system_a55e1b299c7417851a7bc7f1a1825a8a_6
+9658c9988c57        dc9dd64ec734           "kube-scheduler --au…"   9 hours ago         Up 9 hours                                   k8s_kube-scheduler_kube-scheduler-master.rpi.nicesj.com_kube-system_74dea8da17aa6241e5e4f7b2ba4e1d8e_7
+603d05140317        2b20336a96ec           "kube-apiserver --ad…"   9 hours ago         Up 9 hours                                   k8s_kube-apiserver_kube-apiserver-master.rpi.nicesj.com_kube-system_d4db64777301cacf8f286ff6c4393ea1_10
+840e5e57f217        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-controller-manager-master.rpi.nicesj.com_kube-system_42cb3c7ba289276039d9a6a8ec36bf63_6
+52914d751666        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_etcd-master.rpi.nicesj.com_kube-system_a55e1b299c7417851a7bc7f1a1825a8a_6
+6ac76ea5e118        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-scheduler-master.rpi.nicesj.com_kube-system_74dea8da17aa6241e5e4f7b2ba4e1d8e_6
+00c290eb25d4        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-apiserver-master.rpi.nicesj.com_kube-system_d4db64777301cacf8f286ff6c4393ea1_6
+cf219e47e27a        registry:2             "/entrypoint.sh /etc…"   11 hours ago        Up 9 hours          0.0.0.0:5000->5000/tcp   registry
+# registry container 의 shell 을 연다.
+$ docker exec -it cf219e47e27a /bin/sh
+# registry container shell 로 진입
+/ # ls /var/lib/registry/docker/registry/v2/
+blobs/         repositories/
+/ # ls /var/lib/registry/docker/registry/v2/repositories/ubuntu18.04
+_layers/     _manifests/  _uploads/
+```
 
 ### References
 
@@ -401,6 +484,14 @@ $ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentatio
 $ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl delete -f -
 ```
 
+### cluster 에 hello-world (from private registry) deploy 시키기
+```
+$ kubectl apply -f deploy.yaml 
+$ kubectl get pod hello-world
+$ kubectl get pods
+NAME          READY   STATUS              RESTARTS   AGE
+hello-world   0/1     ContainerCreating   0          3m56s
+```
 
 ## Persistent Volume (Claim)
 
