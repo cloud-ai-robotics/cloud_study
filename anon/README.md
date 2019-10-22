@@ -84,6 +84,68 @@ $ DOCKER_BUILDKIT=1 docker build . -t git:0.3 --ssh default
 $ docker run --name hello-nginx3 -d -p 8080:80 -v /root/example/data:/data hello:0.1
 ```
 
+# Docker Privat Registry 만들기
+
+## 인증을 위해 아래와 같이 htpasswd 로 사용자 계정을 생성한다.
+
+```
+$ mkdir auth
+$ docker run --entrypoint htpasswd registry:2 -Bbn ${USER_ID} ${USER_PASSWD} > auth/htpasswd
+$ docker stop registry
+```
+
+## https 를 위해 아래와 같이 self-signed certificate 를 만든다. (let's encrypt 를 써도 됨)
+```
+$ mkdir certs
+$ cd certs
+$ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 9999 -out cert.pem
+$ openssl x509 -text -noout -in certificate.pem
+$ openssl x509 -text -noout -in cert.pem
+$ openssl pkcs12 -inkey key.pem -in cert.pem -export -out cert.p12
+$ openssl pkcs12 -in cert.p12 -noout -info
+```
+
+## docker registry 를 실행시킨다.
+
+```
+$ docker run -d -p 5000:5000 --restart=always --name registry -v /root/docker/registry/auth:/auth -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /root/docker/registry/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/cert.pem -e REGISTRY_HTTP_TLS_KEY=/certs/key.pem -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 registry:2
+```
+
+## docker login 테스트
+
+```
+$ docker login https://localhost:5000 
+```
+
+## docker 에 이미지 push 해보기
+```
+$ docker pull ubuntu:18.04
+$ docker tag ubuntu:18.04 registry.nicesj.com/ubuntu18.04
+$ docker push registry.nicesj.com/ubuntu18.04
+$ docker pull registry.nicesj.com/ubuntu18.04
+```
+
+## self-signed certificate 를 신뢰하도록 추가
+
+> Linux Ubuntu/Debian
+>
+> Ubuntu/Debian allows you to install extra root certificates via the /usr/local/share/ca-certificates directory. To install your own root authority certificate copy your root certificate to /usr/local/share/ca-certificates. Make sure the file has the .crt extension. so rename it when necessary.
+>
+> After you copied your certificate to the /usr/local/share/ca-certificates folder you need to refresh the installed certificates and hashes. Within ubuntu/debian you can perform this action via one command:
+>
+> sudo update-ca-certificates
+>
+> You will notice that the command reports it has installed one (or more) new certificate. The certificate has been added to the Operating System and signed certificates will be trusted.
+>
+> To remove the certificate, just remove it from /usr/local/share/ca-certificates and run
+>
+> sudo update-ca-certificates --fresh
+>
+
+### References
+
+ * [Install root certificate](https://www.bounca.org/tutorials/install_root_certificate.html)
+
 # Kubernetes
 
 ## 패키지 설치
@@ -346,6 +408,10 @@ $ kubectl apply -f myNFS-Caim.yaml
 
  StorageClass 가 없는 경우 Default 를 기준으로,
  AccessMode 와 Request Storage Size 를 이용해서, Persistent Volume 을 찾는다.
+
+## Docker private registry 에서 image pull 하기
+
+ * [Pull image from private registry](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)
 
 # 기타 (Raspberry Pi)
 
