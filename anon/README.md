@@ -108,7 +108,7 @@ $ openssl pkcs12 -in cert.p12 -noout -info
 ## docker registry 를 실행시킨다.
 
 ```
-$ docker run -d -p 5000:5000 --restart=always --name registry -v /root/docker/registry/auth:/auth -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /root/docker/registry/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/cert.pem -e REGISTRY_HTTP_TLS_KEY=/certs/key.pem -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 registry:2
+$ docker run -d -p 5000:5000 --restart=always --name registry -v /root/docker/registry/auth:/auth -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /root/docker/registry/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/cert.pem -e REGISTRY_HTTP_TLS_KEY=/certs/key.pem -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 -e REGISTRY_STORAGE_DELETE_ENABLED=true registry:2
 ```
 
 ## docker login 테스트
@@ -201,7 +201,7 @@ bb5cec76f6eb: Mounted from ubuntu
 
 ```
 # registry 가 동작중인 container Id 를 찾는다.
-$ docker ps
+$ docker ps -a
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                    NAMES
 44656edcb0c3        ef3b5d63729b           "/opt/bin/flanneld -…"   9 hours ago         Up 9 hours                                   k8s_kube-flannel_kube-flannel-ds-arm-5xw4x_kube-system_047eacc5-b887-4e08-b7e5-a0f96c980d3a_6
 9b966978f24e        56b69fd5e66b           "/usr/local/bin/kube…"   9 hours ago         Up 9 hours                                   k8s_kube-proxy_kube-proxy-vcjrv_kube-system_874a86b2-9536-40ca-a857-df428d7b8db9_5
