@@ -1,7 +1,12 @@
+#
+# https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/
+#
 apiVersion: v1
 kind: Pod
 metadata:
         name: hello-world
+        labels:
+                app: hello-world-label
 spec:
         containers:
                 - name: hello-world-container
