@@ -1,6 +1,10 @@
+# Overview
+아래 문서는 RPi 에서 AP 및 k8s 환경 구축을 위한 가이드입니다.
+일부 권한이 필요한 명령의 경우, sudo 를 사용해야 하지만, 문서에서는 생략하고 있습니다.
+
 # Docker
 
-## Docker Repository 추가
+## Docker Package Repository 추가 - Raspian Buster
 
  * /etc/apt/sources.list.d/docker.list 파일 생성
 ```
@@ -9,19 +13,20 @@ $ echo "deb [arch=armhf] https://download.docker.com/linux/raspbian buster stabl
 $ apt update
 ```
 
-## Docker 패키지 설치
+## Docker Package 설치
 
- * RPi 에서 Docker build 를 할 때, Unexpected EOF 에러가 나는 경우, docker 를 다시 설치한다.
+ * RPi 에서 Docker build 를 할 때, Unexpected EOF 에러가 나는 경우, docker 를 다시 설치한다. (18.09 버전이 설치되어야 Crash 가 나지 않음)
 ```
 $ apt update
 $ apt install docker.io runc
 $ systemctl enable docker
 ```
 
-## Docker 동작 환경 설정
+## Docker 환경 설정
 
+### 커널 부트 파라미터 수정
 
- * 부팅 파라미터를 수정: /boot/cmdline.txt (없으면) 아래 항목들을 추가
+ * /boot/cmdline.txt (없으면) 아래 항목들을 줄의 끝에 추가
 ```
 cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1
 ```
@@ -32,12 +37,14 @@ cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1
 $ dphys-swapfile swapoff
 $ dphys-swapfile uninstall
 $ update-rc.d dphys-swapfile remove
-$ vi /etc/dphys-swapfile # CONF_SWAP_SIZE=0
+$ vi /etc/dphys-swapfile # CONF_SWAP_SIZE=0 로 수정
 ```
 
 ### Docker 설정 파일 수정
- * /etc/docker/damon.json 파일 수정
-   - container 들이 사용할 사설망을 지정
+ * /etc/docker/daemon.json 파일 수정
+   - container 들이 사용할 IP 주소 대역을 지정
+     추 후 K8s cluster init 을 할 때, pod 들이 사용할 IP address 대역을 지정합니다.
+     이 IP 주소들은 docker command 로 k8s cluster 를 거치지 않고 직접 container 를 동작시킬 때 사용하게 되는 ip 영역으로 cluster 내에서 각 container 가 사용하게 될 주소와는 다를 수 있습니다.
 ```
 {
    "exec-opts": ["native.cgroupdriver=systemd"],
@@ -51,11 +58,14 @@ $ vi /etc/dphys-swapfile # CONF_SWAP_SIZE=0
 }
 ```
 
-## Docker Image 만들기
+## Docker Image 만들어 보기
 
-## Dockerfile 작성
+실제 Docker image 를 만들어 보고, 실행시켜서 container 를 생성해 보겠습니다.
+
+### Dockerfile 작성
 
  * 첫 줄 syntax 커멘트는 Docker 를 빌드할 때, 아직 정식 포함되지 않은 기능을 사용할 수 있도록 Toggle 시키는 기능임
+   docker/dockerfile 이라는 image 에서 experimental version 이 붙은 것을 dockerhub.io 에서 받아 사용하게 됩니다.
 ```
 # syntax=docker/dockerfile:experimental
 FROM ubuntu:18.04
@@ -65,20 +75,27 @@ RUN apt-get install -y git nodejs
 RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 RUN --mount=type=ssh git clone git@github.com:/ai-robotics-kr/cloud_study
 WORKDIR /cloud
-CMD ["/usr/bin/node /cloud/cloud_study/anon/service/webserver.js"]
+CMD ["/usr/bin/node", "/cloud/cloud_study/anon/service/webserver.js"]
 ```
+
  1. ubuntu 18.04 이미지를 base 로 해서, package repository 를 갱신하고, git 과 nodejs 패키지를 설치한다.
  2. ssh client 설정에 Host key checking 옵션을 끈다. (최초 접속시 추가하겠냐고 묻지 않게 함)
  3. [--mount](https://docs.docker.com/storage/bind-mounts/) 옵션에 [type=ssh](https://docs.docker.com/develop/develop-images/build_enhancements/) 기능을 사용해서, Host 의 SSH credentials 에 접근할 수 있게 한다. (참고: Using SSH to access private data in builds)
  4. webserver 를 실행시킨다.
 
-## 이미지 만들기
-[Build Enhancements for Docker](https://docs.docker.com/develop/develop-images/build_enhancements/) 의 "DOCKER_BUILDKIT" 환경 변수에 대한 설명을 참고할 것.
+### 이미지 build 하기
+
+ * ssh-agent 를 실행시킵니다.
+ * ssh-add 로 현재 사용중인 ssh credential 을 ssh-agent daemon 에 추가시킵니다.
+ * [Build Enhancements for Docker](https://docs.docker.com/develop/develop-images/build_enhancements/) 의 "DOCKER_BUILDKIT" 환경 변수에 대한 설명을 참고할 것.
+
 ```
+$ eval `ssh-agent`
+$ ssh-add
 $ DOCKER_BUILDKIT=1 docker build . -t git:0.3 --ssh default
 ```
 
-## Container 실행시키기
+### Container 실행시키기
 
 ```
 $ docker run --name hello-nginx3 -d -p 8080:80 -v /root/example/data:/data hello:0.1
@@ -86,7 +103,7 @@ $ docker run --name hello-nginx3 -d -p 8080:80 -v /root/example/data:/data hello
 
 # Docker Privat Registry 만들기
 
-## 인증을 위해 아래와 같이 htpasswd 로 사용자 계정을 생성한다.
+## Docker Registry 사용자 인증을 위해 아래와 같이 htpasswd 로 계정을 생성한다.
 
 ```
 $ mkdir auth
@@ -94,7 +111,7 @@ $ docker run --entrypoint htpasswd registry:2 -Bbn ${USER_ID} ${USER_PASSWD} > a
 $ docker stop registry
 ```
 
-## https 를 위해 아래와 같이 self-signed certificate 를 만든다. (let's encrypt 를 써도 됨)
+## https (TLS enabling) 를 위해 아래와 같이 self-signed certificate 를 만든다. (let's encrypt 를 써도 됨)
 ```
 $ mkdir certs
 $ cd certs
@@ -106,6 +123,8 @@ $ openssl pkcs12 -in cert.p12 -noout -info
 ```
 
 ## docker registry 를 실행시킨다.
+
+ * REGISTRY_STORAGE_DELETE_ENABLED 는 기본적으로 false 상태로 동작합니다. 이 환경 변수는 registry 에 등록된 이미지에 대한 삭제 기능 활성화 여부를 설정합니다.
 
 ```
 $ docker run -d -p 5000:5000 --restart=always --name registry -v /root/docker/registry/auth:/auth -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd -v /root/docker/registry/certs:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/cert.pem -e REGISTRY_HTTP_TLS_KEY=/certs/key.pem -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 -e REGISTRY_STORAGE_DELETE_ENABLED=true registry:2
@@ -124,7 +143,7 @@ $ docker tag ubuntu:18.04 registry.nicesj.com/ubuntu:18.04
 $ docker push registry.nicesj.com/ubuntu:18.04
 $ docker pull registry.nicesj.com/ubuntu:18.04
 #
-# Dockerfile 빌드를 위해 dockerfile:experimental image 도 push
+# Dockerfile 빌드를 위해 dockerfile:experimental image 도 push (굳이 안해도 되지만, 완전히 폐쇄된 cluster 환경을 구축하려고 한다면야...)
 #
 $ docker pull docker.io/docker/dockerfile:experimental
 $ docker tag docker/dockerfile:experimental registry.nicesj.com/docker/dockerfile:experimental
@@ -134,7 +153,7 @@ $ docker push registry.nicesj.com/dockerfile:experimental
 ## 기존 Dockerfile 을 빌드해서 private registry 에 넣어보기
 ```
 #
-# 빌드하기, tag 를 그을때 registry.nicesj.com/hello-world:0.1 이라고 하면 아래 태그 긋기를 다시 안해도 되는걸까요?
+# 빌드하기, tag 를 그을때 registry.nicesj.com/hello-world:0.1 이라고 하면 태그를 다시 긋지 않아도 됨
 #
 $ DOCKER_BUILDKIT=1 docker build . -t hello-world:0.1 --ssh default 
 [+] Building 71.8s (14/14) FINISHED
@@ -159,7 +178,7 @@ $ DOCKER_BUILDKIT=1 docker build . -t hello-world:0.1 --ssh default
  => => writing image sha256:0472e3d1d059424f7d4ab5abb8b1654f86d5c527cbe70aa08c94cb4ccd34b4a9                                                                                     0.0s
  => => naming to docker.io/library/hello-world:0.1                                                                                                                               0.0s
 #
-# 태그 긋기
+# 태그 긋기 (빌드할 때, tag 를 registry.nicesj.com/hello-world:0.1 로 했다면 바로 push 하면 됨)
 #
 $ docker tag hello-world:0.1 registry.nicesj.com/hello-world:0.1
 #
@@ -179,8 +198,9 @@ bb5cec76f6eb: Mounted from ubuntu
 0.1: digest: sha256:dcc2bf8583bac15535c16137c8527aa156c4288d94fbe065349a41946aa21405 size: 2203
 ```
 
-
 ## self-signed certificate 를 신뢰하도록 추가
+
+직접 만든 인증서의 경우, 기본적으로 추가 되어 있는 "신뢰할 수 있는 인증기관" 에 내 인증서에 대한 정보가 없으므로, 신뢰할 수 있는 인증기관에 내 인증서를 추가한다.
 
 > Linux Ubuntu/Debian
 >
@@ -200,7 +220,9 @@ bb5cec76f6eb: Mounted from ubuntu
 ## docker registry 내용 확인하기
 
 ```
+#
 # registry 가 동작중인 container Id 를 찾는다.
+#
 $ docker ps -a
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS                    NAMES
 44656edcb0c3        ef3b5d63729b           "/opt/bin/flanneld -…"   9 hours ago         Up 9 hours                                   k8s_kube-flannel_kube-flannel-ds-arm-5xw4x_kube-system_047eacc5-b887-4e08-b7e5-a0f96c980d3a_6
@@ -216,22 +238,24 @@ b2d7c1afd7e2        ad0038846086           "etcd --advertise-cl…"   9 hours ag
 6ac76ea5e118        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-scheduler-master.rpi.nicesj.com_kube-system_74dea8da17aa6241e5e4f7b2ba4e1d8e_6
 00c290eb25d4        k8s.gcr.io/pause:3.1   "/pause"                 9 hours ago         Up 9 hours                                   k8s_POD_kube-apiserver-master.rpi.nicesj.com_kube-system_d4db64777301cacf8f286ff6c4393ea1_6
 cf219e47e27a        registry:2             "/entrypoint.sh /etc…"   11 hours ago        Up 9 hours          0.0.0.0:5000->5000/tcp   registry
+#
 # registry container 의 shell 을 연다.
+#
 $ docker exec -it cf219e47e27a /bin/sh
+#
 # registry container shell 로 진입
+#
 / # ls /var/lib/registry/docker/registry/v2/
 blobs/         repositories/
 / # ls /var/lib/registry/docker/registry/v2/repositories/ubuntu18.04
 _layers/     _manifests/  _uploads/
 ```
 
-### References
-
- * [Install root certificate](https://www.bounca.org/tutorials/install_root_certificate.html)
-
 # Kubernetes
 
 ## 패키지 설치
+
+ * Package repository 추가
 
 ```
 $ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -259,12 +283,15 @@ $ hostnamectl
 
  * Raspberry Pi 의 경우, raspberry pi config tool 을 이용하여, hostname 설정
 
-
 ## kubernetes 초기화
 
   * kubeadm init 할 때 옵션들을 잘 챙겨볼것. 또는 config.yaml 파일을 만들어서 적용(이게 최신 방법임)
 
 ### Master node 초기화
+
+ RPi3 에서 할 때, 초기화 중 에러가 발생하는 경우가 다수 발생했었음.
+ 중간에 실패하면, kubeadm 을 reset 하고 다시... 해보거나, 각 단계별로 직접 실행해줘야 함.
+ 특히, k8s API server 가 초기화 되는데, 많은 시간이 걸리면서, 다른 작업이 k8s API server 가 동작하지 않는다고, 실패하는 경우임
 
 ```
 raspberrypi:~/kubernetes# kubeadm init --pod-network-cidr=10.0.0.0/16
@@ -346,14 +373,14 @@ raspberrypi:~/kubernetes#
  * network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 되며,
    추가된 worker node 가 not ready 상태로 남아 있게 됨.
 
-
 #### Weave net
 
  * 일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
+ * Weave net 은 ARM 버전 지원이 명확하지 않음.
 
-__반드시, weavenet 을 먼저 설치하고, workernode 를 추가할것__
+__RPi에서 crash 가 났음: `kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1"` 해도 똑같음 <== ISA 가 다르기 때문임..__
 
-__RPi에서 crash 가 났음: `kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1"`__
+ * 설치하기
 
 ```
 raspberrypi:~/cloud_study# kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
@@ -363,7 +390,16 @@ clusterrolebinding.rbac.authorization.k8s.io/weave-net created
 role.rbac.authorization.k8s.io/weave-net created
 rolebinding.rbac.authorization.k8s.io/weave-net created
 daemonset.apps/weave-net created
+```
 
+ * 삭제하기
+
+```
+$ kubectl -n kube-system delete -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
+
+ * 설치 확인
+```
 raspberrypi:~/cloud_study# kubectl get pods -n kube-system
 NAME                       READY   STATUS              RESTARTS   AGE
 coredns-5644d7b6d9-hzssx   0/1     Pending             0          80m
@@ -372,31 +408,34 @@ kube-proxy-fk6xz           1/1     Running             0          28m
 weave-net-4l2xs            0/2     ContainerCreating   0          108s
 ```
 
- * 모두 설치가 끝난 후 아래와 같은 에러가 나는 경우,
-
+   - 모두 설치가 끝난 후 아래와 같은 에러가 나는 경우,
 ```
 $ journalctl -xe -f
 10월 13 09:53:15 master.rpi.anon.com kubelet[4208]: E1013 09:53:15.172810    4208 dns.go:135] Nameserver limits were exceeded, some nameservers have been omitted, the applied nameserver line is: 10.0.0.1 10.0.1.1 168.126.63.1
 ```
 
- * /etc/resolve.conf 에 아래 줄을 추가한다.
-
+   - /etc/resolve.conf 에 아래 줄을 추가한다. (ISA 가 다른 경우에는 이걸 추가해도 의미 없음)
 ```
 search localdomain service.ns.svc.cluster.local
 ```
 
- * weavenet 삭제하기
-
-```
-$ kubectl -n kube-system delete -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-```
-
 #### Flannel
 
- * Flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
+flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
 
 ```
-$ kubeadm init --pod-network-cidr=10.0.0.0/16
+$ kubeadm init --pod-network-cidr=10.1.0.0/16
+```
+
+ * 설치하기
+   RPi (ARM64) 에 설치하는 경우, kube-flannel.yml 파일의 amd64 를 arm64 로 변경해줘야 한다.
+```
+$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl apply -f -
+```
+
+ * 삭제하기
+```
+$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl delete -f -
 ```
 
 ### Worker node 초기화
@@ -426,65 +465,37 @@ Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
 $ kubeadm token create
 ```
 
-### Addon 설치하기
-
-Kubernetes Cluster 가 구성되면 필요한 경우, 추가 구성 요소들을 설치(Deploy) 한다.
-
-Reference: (Addons)[https://kubernetes.io/docs/concepts/cluster-administration/addons/]
-
-network addon 을 설치하지 않으면, coredns 가 pending 상태로 있게 되며,
-추가된 worker node 가 not ready 상태로 남아 있게 됨.
-
-
-### Weave net
-일단 AWS 를 보니, 이것 저것 얘기하는데, weave net 이 얘기가 많길레, weave net 을 설치해봄
-
-"""반드시, weavnet 을 먼저 설치하고, workernode 를 추가할것"""
-"""RPi에서 crash 가 났음: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.WEAVE_NO_FASTDP=1""""
-
-> docker inspect 로 확인해보면, amd64 architecture 로 설치되어 있어서, RPi 에서 제대로 동작을하지 않음
-> flannel 로 갈아탔음.
-
  * join 명령어 찾는 방법
 ```
 master:~/cloud_study/anon# kubeadm token create --print-join-command
 kubeadm join 192.168.0.6:6443 --token u3fqr3.xesi5amthrd4mc61     --discovery-token-ca-cert-hash sha256:95155c5cd47f146405332427088f1118b430908dfda8017fb8c0144c582e84d7
 ```
 
-> Worker node 가 10.0.1.x network (ethernet interface 에 구성) 에 있기 때문에, join 을 할 때, 10.0.1.1 gateway API 로 시도 했더니,
-> 인증되지 않은 주소라고 해서, 이것 저것 찾아보다가,. 어짜피 worker node network 에서도 192.168.0.6 으로 접근 할 수 있기 때문에,
-> 그냥 했더니.. 잘 됨. 그래도 궁금한 것 하나는 남음
-> kubernetes init 을 할 때, cluster IP 인증 목록은 어떻게 변경할 수 있는거지?
-> Reference: (Invalid X.509 Certificate for the K8s master)[https://stackoverflow.com/questions/46360361/invalid-x509-certificate-for-kubernetes-master]
-
-### Master node 에서 node 목록 확인하기
+### node 목록 확인하기
 ```
 $ kubectl get node
    NAME      STATUS  ROLES  AGE   VERSION
 raspberrypi NotReady master 9m32s v1.16.1
 ```
 
-### Flannel
-
-flannel 은 kubeadm init 을 할 때 pod 들이 cidr(Classless Inter-Domain Routing) 옵션을 반드시 넣어줘야 한다.
-```
-$ kubeadm init --pod-network-cidr=10.1.0.0/16
-```
-
-#### 설치하기
-
-RPi (ARM64) 에 설치하는 경우, kube-flannel.yml 파일의 amd64 를 arm64 로 변경해줘야 한다.
-
-```
-$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl apply -f -
-```
-
-#### 삭제하기
-```
-$ curl -sSL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm64/g"  | kubectl delete -f -
-```
-
 ### cluster 에 hello-world (from private registry) deploy 시키기
+
+
+  * deploy.yaml 파일 만들기
+```
+apiVersion: v1
+kind: Pod
+metadata:
+        name: hello-world
+spec:
+        containers:
+                - name: hello-world-container
+                  image: registry.nicesj.com/hello-world:0.1
+        imagePullSecrets:
+                - name: regcred
+```
+
+  * kubectl 로 deploy 시키기
 ```
 $ kubectl apply -f deploy.yaml 
 $ kubectl get pod hello-world
@@ -493,6 +504,8 @@ NAME          READY   STATUS              RESTARTS   AGE
 hello-world   0/1     ContainerCreating   0          3m56s
 ```
 
+
+## 기타 - 추 후 정리 필요
 ## Persistent Volume (Claim)
 
 ### Persistent Volume
@@ -683,6 +696,8 @@ DNS=10.0.1.1
 
 # References
 
+ * [Invalid X.509 Certificate for the K8s master](https://stackoverflow.com/questions/46360361/invalid-x509-certificate-for-kubernetes-master)
+ * [Install root certificate](https://www.bounca.org/tutorials/install_root_certificate.html)
  * [CoreDNS](https://coredns.io/): Kubernetes cluster 안의 Pod 들이 참고하는 DNS Service
  * [Kube Proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/)
  * [Custom domains with dnsmasq](https://github.com/RMerl/asuswrt-merlin/wiki/Custom-domains-with-dnsmasq)
