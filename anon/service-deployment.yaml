@@ -1,0 +1,49 @@
+#
+# https://kubernetes.io/docs/concepts/services-networking/service/
+#
+apiVersion: v1
+# a Service is an abstraction which defines a logical set of Pods and a policy by which to access them (sometimes this pattern is called a micro-service)
+kind: Service
+metadata:
+        name: hello-world-service
+spec:
+        # 만약, Selector 를 지정하지 않는다면,
+        # Endpoints object 를 생성해서, 수동으로 직접 service 와 mapping 시켜줄 수 있다.
+        selector:
+                app: hello-world-label
+        ports:
+                # TCP, UDP, SCTP, [ HTTP, PROXY ]
+                - name: http
+                  port: 80
+                  targetPort: 8087
+        type: ClusterIP
+
+#
+# Endpoints 예제
+#
+# apiVersion: v1
+# kind: Endpoints
+# metadata:
+#   name: hello-world
+# subsets:
+#   # 주소를 지정할 때 주의할 점
+#   # 루프백 주소(127.0.0.0/8, ::1/128 또는 link-local 주소 (169.254.0.0/16, 224.0.0.0/24, fe80::/64) 는 쓰면 안된다.
+#   # cluster IP 이면 안됨, kube-proxy 가 가상 주소를 목적지로 하는 것을 지원하지 않음.
+#   - addresses:
+#       - ip: 192.168.0.11
+#     ports:
+#       - port: 8087
+#
+# ExternalName 예제
+# IP 주소 대신 DNS 를 사용하여, 외부 서비스를 cluster 안에서 매핑시켜 접근할 수 있게 함.
+#
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: hello-world
+#   namespace: default
+# spec:
+#   type: ExternalName
+#   externalName: database.nicesj.com
+#
+#

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # A Deployment named hello-world-deployment will be created.
+  name: hello-world-deployment
+  labels:
+    app: hello-world-label
+spec:
+  # A replica will be created
+  replicas: 1
+  # Defines how the Deployment finds which Pods to manage.
+  selector:
+    # matchExpressions (https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    # A list of operations: 
+    #   - In, NotIn (The values set must be non-empty)
+    #   - Exists, DoesNotExist
+    # matchLabels == following matchExpressions
+    # matchexpressions:
+    #   - {key: app, operator: In, values: [hello-world-label]}
+    matchLabels:
+      app: hello-world-label
+  template:
+    metadata:
+      labels:
+        app: hello-world-label
+    spec:
+      containers:
+      - name: hello-world
+        image: registry.nicesj.com/hello-world:0.1
+        ports:
+        - containerPort: 8087
+
+#
+# Create the Deployment by running the following command:
+#
+#   $ kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
+#
