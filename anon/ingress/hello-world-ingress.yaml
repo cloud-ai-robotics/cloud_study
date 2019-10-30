@@ -7,14 +7,14 @@ metadata:
                 # use the shared ingress-nginx
                 # 이 클래스 정보를 이용해 ingress-nginx-controller 가 설정 정보들을 수집함
                 kubernetes.io/ingress.class: "nginx"
-                nginx.org/ssl-services: "hello-world-service"
-                ingress.kubernetes.io/ssl-passthrough: "true"
-                nginx.ingress.kubernetes.io/secure-backends: "true"
+                # nginx.org/ssl-services: "hello-world-service"
+                # ingress.kubernetes.io/ssl-passthrough: "true"
+                # nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
-        tls:
-        - hosts:
-          - cluster.rpi.nicesj.com
-          secretName: cluster
+        #tls:
+        #- hosts:
+        #  - cluster.rpi.nicesj.com
+        #  secretName: cluster
         rules:
         - host: cluster.rpi.nicesj.com
           http:
@@ -22,6 +22,6 @@ spec:
                 - path: /
                   backend:
                         serviceName: hello-world-service
-                        servicePort: 443
+                        servicePort: 8087
 # 아래 구분자로 여러개의 spec file 을 적용할 수 있음.
 # ---

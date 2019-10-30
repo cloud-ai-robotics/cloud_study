@@ -6,6 +6,7 @@ apiVersion: v1
 kind: Service
 metadata:
         name: hello-world-service
+        namespace: default
 spec:
         # 만약, Selector 를 지정하지 않는다면,
         # Endpoints object 를 생성해서, 수동으로 직접 service 와 mapping 시켜줄 수 있다.
@@ -14,7 +15,7 @@ spec:
         ports:
                 # TCP, UDP, SCTP, [ HTTP, PROXY ]
                 - name: http
-                  port: 80
+                  port: 8087
                   targetPort: 8087
         type: ClusterIP
 
