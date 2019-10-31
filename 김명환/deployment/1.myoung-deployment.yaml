@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: myoung-nginx-deployment
+  labels:
+    app: myoung-nginx-label
+spec:
+  replicas: 1 # 복사할 Pod의 수
+  selector:
+    matchLabels:
+      app: myoung-nginx-label
+  template:
+    metadata:
+      labels:
+        app: myoung-nginx-label
+    spec:
+      containers:
+      - name: myoung-nginx
+        image: myoung.master.com:5000/nginx # 개인 private registry에서 가져 올 경우 이렇게 사용
+        ports:
+        - containerPort: 80
+
+# Deployment는 새로운 버전의 애플리케이션을 다양한 전략으로 무중단 배포하게 해주는 오브젝트
+# kubectl apply -f 1.1.myoung-deployment.yaml 입력
+# 생성후 상태확인 정보는 kubectl get deploy [deployment 이름] 또는 kubectl describe deploy [deployment 이름] 입력
+#
