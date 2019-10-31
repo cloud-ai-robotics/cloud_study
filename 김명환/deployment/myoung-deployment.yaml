@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment #각 worker node 들에게 배포하기위한 정책
+metadata:
+  name: myoung-nginx-deployment #deploy name
+  labels:
+    app: myoung-nginx-label
+spec:
+  replicas: 1 #복제할 Pod 의 수
+  selector:
+    matchLabels:
+      app: myoung-nginx-label
+  template:
+    metadata:
+      labels:
+        app: myoung-nginx-label
+    spec:
+      containers:
+      - name: myoung-nginx
+        image: myoung.master.com:5000/nginx #private registry에 업로된 image 사용(nginx)
+        ports:
+        - containerPort: 80 #배포 후운영되는 container의 Port ?? 
+
+
+# kubectl apply -f myoung-deployment.yaml 입력
+# master node와 연결되어 있는 worker node에게 'myoung.master.com:5000/nginx' 이미지가 배포됨
+# 관련 상태 및 정보는 kubectl describe deploy [deploy name] 또는 kubectl get deploy [deploy name] 을 통해 확인 가능

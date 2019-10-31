@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service # Pod를 외부 네트워크와 연결해주는 오브젝트, 여러 개의 Pod을 바라보는 내부 로드밸런서를 생성할 때 사용
+metadata:
+  name: myoung-service-test
+spec:
+  selector:
+    app: myoung-nginx-label
+  type: NodePort #종류는 ClusterIP(type 입력 안하면 default로 설정), NodePort, loadbalancer가 있음
+  ports:
+    - name: http
+      port: 7777
+      protocol: TCP
+      targetPort: 80 #실제 workernode에서 서비스하는 port
+      nodePort: 30036 #외부에서 요청받을 port
+
+# kubectl apply -f myoung-service-Node-deploy.yaml 입력
+# clusterip 사용할 경우 clusterIP를 통해서만 접속 가능하며 외부에서 접속 불가
+# nodeport 같은경우 외부에서 직접적으로 접근가능, [Master node 실제 IP]:nodePort 통해 접속 가능
+# 관련 상태 및 정보는 kubectl describe svc [service name] 또는 kubectl get svc [service name] 을 통해 확인 가능

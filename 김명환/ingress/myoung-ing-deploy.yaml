@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Ingress # 다양한 웹 어플리케이션을 로드밸런서로 서비스 하기위한 정책
+metadata:
+  name: myoung-ingress-test
+  annotations:
+          #app.kubernetes.io/name: ingress-nginx
+          #app.kubernetes.io/part-of: ingress-nginx
+   nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: myoung.master1.com 
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myoung-service-test
+          servicePort: 80
+          #      - path: /bars2
+          #backend:
+          #serviceName: s2
+          #servicePort: 8080
+          #
+          #
+# host가 myoung.master1.com/ 으로 접속 할 경우 service Name이 'myoung-service-test' 인 service 정책이 적용되도록 설정
+# 만약 myoung.master1.com/bars2 로 접속 할 경우 service Name이 's2' 인 service 정책이 적용되도록 설정
+# 관련 상태 및 정보는 kubectl describe ing [ingress name] 또는 kubectl get ingress [ingress name] 을 통해 확인 가능
