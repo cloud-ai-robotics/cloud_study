@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: myoung-ingress-test
+  annotations:
+          #app.kubernetes.io/name: ingress-nginx
+          #app.kubernetes.io/part-of: ingress-nginx
+   nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: myoung.master1.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myoung-service-test
+          servicePort: 80
+          #      - path: /bars2
+          #backend:
+          #serviceName: s2
+          #servicePort: 8080
+          
+          
+# ingress는 URL Path 기반 라우팅으로 URI 의 path를 보고 각각 서비스 라우팅 해줌. 
+# kubectl apply -f 3.myoung-ing-deployment.yaml 입력
+# 생성후 상태확인 정보는 kubectl get ing [ingress 이름] 또는 kubectl describe ing [ingress 이름] 입력
+# 예를 들어 myoung.master1.com/ 로 접속 할 경우 Service Name이 'myoung-service-test'인 정책을 적용하도록 처리
+# 만약 myoung.master1.com/bars2 로 접속 할 경우 Service Name이 's2'인 정책을 적용하도록 처리
+# ingress 는 제대로 적용이 되지 않는것 같아 좀더 테스트 해봐야 함... 
