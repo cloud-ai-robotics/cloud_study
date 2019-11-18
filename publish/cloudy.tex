@@ -1,17 +1,27 @@
 % Need to define style
-\documentclass{article}
-\includeonly{ap/ap,docker/docker,kuberntes/kuberntes}
-\begin{document}
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
 \title{Cloud Study}
+\author{Cloud Computing Study Group}
+\date{\today}
+\includeonly{ap,docker,kubernetes,References}
+\begin{document}
+\begin{abstract}
+DevOps and MicoServices
+\end{abstract}
+\maketitle
 Hello cloud \cite{CloudStudy}
+
 \include{ap}
 \include{docker}
-\include{kuberntes}
+\include{kubernetes}
+
 %\begin{thebibliography}{999}
 %  \emph{Cloud} Study documentation using \LaTex,
 %  1st Edition,
 %  2019.
 %\end{thebibliography}
+
 \bibliography{References}
 \bibliographystyle{plain}
 \end{document}

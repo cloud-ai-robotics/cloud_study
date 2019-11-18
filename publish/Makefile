@@ -10,6 +10,4 @@ all: cloudy.tex ap.tex kubernetes.tex docker.tex References.bib
 	@pdflatex cloudy.tex
 
 clean:
-	@cd ap; make clean
-	@cd docker; make clean
-	@cd kubernetes; make clean
+	@rm *.aux *.blg *.bbl *.log *.pdf
