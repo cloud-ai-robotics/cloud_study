@@ -1,0 +1,62 @@
+Raspberry Pi를 무선AP로 만들기
+
+<준비물>
+Raspberry PI 3B+
+USB 무선 동글
+
+계속하기 전에 Raspberry Pi가 최신 상태 이고 재부팅 되었는지 확인합니다.
+
+시스템 패키지 목록을 업데이트 합니다.
+$sudo apt update
+
+설치된 모든 패키지를 최신 버전으로 업그레이드 합니다.
+$sudo apt full-upgrade
+
+액세스 포인트로 작동하려면 Raspberry Pi에 연결 장치에 네트워크 주소를 제공하기 위해 DHCP 서버 소프트웨어와 함께 액세스 포인트 소프트웨어가 설치되어 있어야합니다.
+
+액세스 포인트를 만들려면 DNSMasq와 HostAPD가 필요합니다. 
+$sudo apt install dnsmasq hostapd
+
+
+AP구성을 위한 파일이 아직 준비되지 않았으므로 다음과 같이 서비스를 중단합니다.
+$sudo systemctl stop dnsmasq
+$sudo systemctl stop hostapd
+
+<고정 IP 구성>
+서버로 작동하도록 독립형 네트워크를 구성하고 있으므로 Raspberry Pi에는 무선 포트에 고정 IP 주소가 할당되어 있어야합니다. 이 문서에서는 무선 네트워크에 표준 192.168.xx IP 주소를 사용한다고 가정하므로 서버에 IP 주소 192.168.4.1을 할당합니다. 또한 사용중인 무선 장치가 'wlan0' 이라고 가정합니다.
+
+고정 IP 주소를 구성하려면 다음을 사용하여 dhcpcd 구성 파일을 편집합니다.
+$sudo nano /etc/dhcpcd.conf
+
+dhcpcd.conf 파일 끝으로 이동하여 다음과 같이 편집합니다.
+
+interface wlan0
+    static ip_address=192.168.4.1/24
+    nohook wpa_supplicant
+
+이제 dhcpcd 데몬을 다시 시작하고 새' wlan0'을 구성을 설정합니다.
+$sudo service dhcpcd restart
+
+
+
+<DHCP 서버 구성(dnsmasq)>
+DHCP 서비스는 dnsmasq에서 제공합니다. 기본적으로 구성 파일에는 필요하지 않은 많은 정보가 포함되어 있으며
+처음부터 쉽게 시작할 수 있습니다. 이 구성 파일의 이름을 바꾸고 새 파일을 편집합니다.
+
+$sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+$sudo nano /etc/dnsmasq.conf
+
+다음 정보를 dnsmasq 구성 파일에 입력하거나 복사하여 저장합니다.
+interface=wlan0      # Use the require wireless interface - usually wlan0
+dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
+
+wlan0의 192.168.4.2와 192.168.4.20 사이의 임대 시간이 24 시간 인 IP 주소를 제공 합니다.
+다른 네트워크 장치 (예 : eth0)에 DHCP 서비스를 제공하는 경우 해당 인터페이스에 제공하려는 
+주소 범위와 함께 적절한 인터페이스 헤더가있는 섹션을 추가 할 수 있습니다.
+
+dnsmasq의 업데이트 된 구성을 사용하려면 다시 읽어들입니다.
+$sudo systemctl reload dnsmasq
+
+- 이후 내용 진행 예정
+
+※참고: https://www.raspberrypi.org/documentation/configuration/wireless/access-point.md
