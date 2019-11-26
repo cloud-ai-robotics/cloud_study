@@ -12,73 +12,74 @@ Docker와 node.js를 사용하여 웹 서버 배포해보기
 	1.2 웹 서버 생성을 위한 패키지 파일과 서버파일 생성
 	 - node.js는 웹 서버 구축 시 응용프로그램과의 종속성을 설명하는 패키지(package.json) 파일과 웹 응용프로그램을 정의하는 서버(server.js) 파일을 만들어야 함
 
-		1.2.1 sudo vi /var/tmp/docker_node_web/package.json
-		---------------------------------------------------------
-		
-		 {
-		   "name": "madfalcon_docker_web_app",
-		   "version": "1.0.0",
-		   "description": "Node.js on Docker",
-		   "author": "madfalcon <kmyong92@gmail.com>",
-		   "main": "server.js",
-		   "scripts": {
-			 "start": "node server.js"
-		   },
-		   "dependencies": {
-			 "express": "^4.13.3"
-		   }
-		 }
-		
-		---------------------------------------------------------
 
-		1.2.2 sudo vi /var/tmp/docker_node_web/server.js
-		---------------------------------------------------------
+		 sudo vi /var/tmp/docker_node_web/package.json
 		
-		 var express = require('express');
-		 var PORT = 8080;
-		 var app = express();
-		 app.get('/', function (req, res) {
-		   res.send('Hello world\n');
-		 });
-		 
-		 app.listen(PORT);
-		 console.log('Running on http://localhost:' + PORT);
+			 {
+			   "name": "madfalcon_docker_web_app",
+			   "version": "1.0.0",
+			   "description": "Node.js on Docker",
+			   "author": "madfalcon <kmyong92@gmail.com>",
+			   "main": "server.js",
+			   "scripts": {
+				 "start": "node server.js"
+			   },
+			   "dependencies": {
+				 "express": "^4.13.3"
+			   }
+			 }
 		
-		---------------------------------------------------------
+		
+
+
+		sudo vi /var/tmp/docker_node_web/server.js
+		
+			 var express = require('express');
+			 var PORT = 8080;
+			 var app = express();
+			 app.get('/', function (req, res) {
+			   res.send('Hello world\n');
+			 });
+
+			 app.listen(PORT);
+			 console.log('Running on http://localhost:' + PORT);
+		
 		
 		
 		
 	1.3	touch 명령어를 통해 Dockerfile 생성(반드시 똑같이 생성할 것, 만약 이름이 'Dockerfile'이 아니라면 -f 옵션을 통해 해당파일이름을 지정해주어야 함)
-		vi 편집기를 통해 다음과 같이 넣어준다.
 		
-		1.3.1 sudo vi /var/tmp/docker_node_web/Dockerfile
-		---------------------------------------------------------
+	- vi 편집기를 통해 다음과 같이 넣어준다.
 		
-		FROM node:alpine3.10
-		RUN mkdir -p /usr/src/madfalcon_first_app
-		WORKDIR /usr/src/madfalcon_first_app
-		COPY package.json /usr/src/madfalcon_first_app
-		RUN npm install
-		COPY . /usr/src/madfalcon_first_app
-		EXPOSE 8080
-		CMD [ "npm", "start" ]
+		sudo vi /var/tmp/docker_node_web/Dockerfile
 		
-		---------------------------------------------------------
-		TIP: 아래는 Dockerfile 생성 시 옵션정보
-			FROM	베이스 이미지 지정	
-			ADD	파일 및 디렉터리 추가
-			MAINTAINER	Dockerfile 작성자 저장	
-			COPY	파일 복사
-			RUN	커맨드 실행	
-			VOLUME	볼륨 마운트
-			CMD	데몬 실행	
-			ENTRYPOINT	데몬 실행
-			LABEL	라벨 설정	
-			USER	사용자 설정
-			EXPOSE	개방할 포트 export	
-			WORKDIR	작업 디렉터리 지정
-			ENV	환경변수 설정	
-			ONBUILD	build 완료 후 실행될 명령어
+			---------------------------------------------------------
+
+			FROM node:alpine3.10
+			RUN mkdir -p /usr/src/madfalcon_first_app
+			WORKDIR /usr/src/madfalcon_first_app
+			COPY package.json /usr/src/madfalcon_first_app
+			RUN npm install
+			COPY . /usr/src/madfalcon_first_app
+			EXPOSE 8080
+			CMD [ "npm", "start" ]
+
+			---------------------------------------------------------
+			TIP: 아래는 Dockerfile 생성 시 옵션정보
+				FROM	베이스 이미지 지정	
+				ADD	파일 및 디렉터리 추가
+				MAINTAINER	Dockerfile 작성자 저장	
+				COPY	파일 복사
+				RUN	커맨드 실행	
+				VOLUME	볼륨 마운트
+				CMD	데몬 실행	
+				ENTRYPOINT	데몬 실행
+				LABEL	라벨 설정	
+				USER	사용자 설정
+				EXPOSE	개방할 포트 export	
+				WORKDIR	작업 디렉터리 지정
+				ENV	환경변수 설정	
+				ONBUILD	build 완료 후 실행될 명령어
 
 
 
