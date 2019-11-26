@@ -22,3 +22,5 @@
 * -gpu 옵션 에러 해결 : 독커 재시작 
 
   sudo systemctl restart docker
+
+  
