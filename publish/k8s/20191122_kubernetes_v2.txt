@@ -1,0 +1,151 @@
+
+* 20191119_v1 이슈 해결하지 못한 부분부터 시작.
+
+그 다음 쿠버네티스 클러스터 구성을 위해 필요한 kubeadm, kubelel, kubectl 을 설치해준다.
+
+[이슈 직면]
+이 문제에는 시그 레이블이 없습니다. 시그 레이블을 추가하십시오.
+
+root@k8s:~# apt-get install -y kubelet kubeadm kubectl             // 3개의 패키지가 없다는 문제가 발생했다. 금일 여기까지 수행되었으며, 이후 문제해결 및 다음 과정을 정리하겠다.
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+
+No apt package "kubeadm", but there is a snap with that name.
+Try "snap install kubeadm"
+
+No apt package "kubectl", but there is a snap with that name.
+Try "snap install kubectl"
+
+No apt package "kubelet", but there is a snap with that name.
+Try "snap install kubelet"
+
+E: Unable to locate package kubelet
+E: Unable to locate package kubeadm
+E: Unable to locate package kubectl
+
+
+[이슈 해결]
+sudo vim /etc/apt/sources.list.d/kubernetes.list에 레포짓토리를 추가해서 해결했다.
+
+
+mario@k8s:~$ sudo vim /etc/apt/sources.list.d/kubernetes.list
+mario@k8s:~$
+mario@k8s:~$ sudo apt-get update
+Hit:1 https://download.docker.com/linux/ubuntu bionic InRelease
+Hit:3 http://kr.archive.ubuntu.com/ubuntu bionic InRelease
+Get:4 http://kr.archive.ubuntu.com/ubuntu bionic-updates InRelease [88.7 kB]
+Get:2 https://packages.cloud.google.com/apt kubernetes-xenial InRelease [8,993 B]
+Get:5 https://packages.cloud.google.com/apt kubernetes-xenial/main amd64 Packages [31.3 kB]
+Get:6 http://kr.archive.ubuntu.com/ubuntu bionic-backports InRelease [74.6 kB]
+Get:7 http://kr.archive.ubuntu.com/ubuntu bionic-security InRelease [88.7 kB]
+Get:8 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main amd64 Packages [796 kB]
+Get:9 http://kr.archive.ubuntu.com/ubuntu bionic-updates/main Translation-en [283 kB]
+Get:10 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe amd64 Packages [1,026 kB]
+Get:11 http://kr.archive.ubuntu.com/ubuntu bionic-updates/universe Translation-en [316 kB]
+Fetched 1,319 kB in 10s (138 kB/s)
+Reading package lists... Done
+mario@k8s:~$
+mario@k8s:~$
+mario@k8s:~$ sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following additional packages will be installed:
+  conntrack cri-tools socat
+The following NEW packages will be installed:
+  conntrack cri-tools kubeadm kubectl kubelet kubernetes-cni socat
+0 upgraded, 7 newly installed, 0 to remove and 42 not upgraded.
+Need to get 54.3 MB of archives.
+After this operation, 291 MB of additional disk space will be used.
+Get:3 http://kr.archive.ubuntu.com/ubuntu bionic/main amd64 conntrack amd64 1:1.4.4+snapshot20161117-6ubuntu2 [30.6 kB]
+Get:1 https://packages.cloud.google.com/apt kubernetes-xenial/main amd64 cri-tools amd64 1.13.0-00 [8,776 kB]
+Get:7 http://kr.archive.ubuntu.com/ubuntu bionic/main amd64 socat amd64 1.7.3.2-2ubuntu2 [342 kB]
+Get:2 https://packages.cloud.google.com/apt kubernetes-xenial/main amd64 kubernetes-cni amd64 0.7.5-00 [6,473 kB]
+Get:4 https://packages.cloud.google.com/apt kubernetes-xenial/main amd64 kubelet amd64 1.16.3-00 [20.7 MB]
+Get:5 https://packages.cloud.google.com/apt kubernetes-xenial/main amd64 kubectl amd64 1.16.3-00 [9,233 kB]
+Get:6 https://packages.cloud.google.com/apt kubernetes-xenial/main amd64 kubeadm amd64 1.16.3-00 [8,762 kB]
+Fetched 54.3 MB in 6s (9,160 kB/s)
+                                                                .
+					    .
+                                                          (이하 생략)
+
+이어서 이제 쿠버네티스 클러스터 구성을 하기 위한 준비는 끝났다.
+
+mario@k8s:~$ sudo swapoff -a
+[sudo] password for mario:
+
+ > Swap을 사용하는 경우 k8s 클러스터가 구동되지 않는다.
+   . 쿠버네티스 클러스터 구동 시 swap을 사용할 수 없습니다. 완전 불가능은 아닌데 여러가지로 복잡하므로 꺼준다.
+     또는 /etc/fstab 파일에서 swap부분을 주석처리(재부팅 필요)
+
+1. 쿠버네티스 구성하기
+
+root@k8s:~# systemctl status docker
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: e
+   Active: failed (Result: exit-code) since Tue 2019-11-26 10:46:02 UTC; 45min a
+     Docs: https://docs.docker.com
+  Process: 1935 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd
+ Main PID: 1935 (code=exited, status=1/FAILURE)
+
+Nov 26 10:46:00 k8s systemd[1]: Failed to start Docker Application Container Eng
+Nov 26 10:46:02 k8s systemd[1]: docker.service: Service hold-off time over, sche
+Nov 26 10:46:02 k8s systemd[1]: docker.service: Scheduled restart job, restart c
+Nov 26 10:46:02 k8s systemd[1]: Stopped Docker Application Container Engine.
+Nov 26 10:46:02 k8s systemd[1]: docker.service: Start request repeated too quick
+Nov 26 10:46:02 k8s systemd[1]: docker.service: Failed with result 'exit-code'.
+Nov 26 10:46:02 k8s systemd[1]: Failed to start Docker Application Container Eng
+
+ > 도커 서비스가 스탑되어 있다.
+   . 도커 컨테이너가 완전히 죽어있는 상황이여서, 도커를 삭제하고 재설치했다. 여기서 문제가 생겼다.
+
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following additional packages will be installed:
+  docker-ce-cli
+The following NEW packages will be installed:
+  docker-ce docker-ce-cli
+0 upgraded, 2 newly installed, 0 to remove and 47 not upgraded.
+Need to get 0 B/65.3 MB of archives.
+After this operation, 292 MB of additional disk space will be used.
+Do you want to continue? [Y/n] Y
+Selecting previously unselected package docker-ce-cli.
+(Reading database ... 67078 files and directories currently installed.)
+Preparing to unpack .../docker-ce-cli_5%3a19.03.5~3-0~ubuntu-bionic_amd64.deb ...
+Unpacking docker-ce-cli (5:19.03.5~3-0~ubuntu-bionic) ...
+Selecting previously unselected package docker-ce.
+Preparing to unpack .../docker-ce_5%3a19.03.5~3-0~ubuntu-bionic_amd64.deb ...
+Unpacking docker-ce (5:19.03.5~3-0~ubuntu-bionic) ...
+Processing triggers for ureadahead (0.100.0-21) ...
+Processing triggers for systemd (237-3ubuntu10.29) ...
+Processing triggers for man-db (2.8.3-2ubuntu0.1) ...
+Setting up docker-ce-cli (5:19.03.5~3-0~ubuntu-bionic) ...
+Setting up docker-ce (5:19.03.5~3-0~ubuntu-bionic) ...
+Job for docker.service failed because the control process exited with error code.
+See "systemctl status docker.service" and "journalctl -xe" for details.
+invoke-rc.d: initscript docker, action "start" failed.
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+   Active: activating (auto-restart) (Result: exit-code) since Tue 2019-11-26 11:52:16 UTC; 4ms ago
+     Docs: https://docs.docker.com
+  Process: 18260 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock (code=exited, status=1/FAILURE)
+ Main PID: 18260 (code=exited, status=1/FAILURE)
+
+Nov 26 11:52:16 k8s systemd[1]: Failed to start Docker Application Container Engine.
+dpkg: error processing package docker-ce (--configure):
+ installed docker-ce package post-installation script subprocess returned error exit status 1
+E: Sub-process /usr/bin/dpkg returned an error code (1)
+
+ > 이 에러가 뜨면 dpkg든 apt든 다 기능이 죽는다고 한다. 이것 저것 시도 하지만 install은 먹통이고 remove만 가능해서 패키지들간의 dependency 관련 문제가 생긴다고 한다.
+   . root@k8s:~#rm /var/lib/dpkg/info/*
+     root@k8s:~#dpkg --configure -a
+     root@k8s:~#apt-get update
+   .. 위 명령을 통해, 해결하려고 했지만, 여전히 해결되지 않았다.
+
+   ... root@k8s:~#apt-get install update-manager
+   ....마지막으로 software 전체 자동 업데이트도 해봤지만 해결되지 않았다. 
+
+#20191126_v2 내용: kubernetes install 이슈 해결&클러스터 이슈 직면&이슈 해결 진행 중 
+#이것저것 이슈에 대한 원인과 해결 방법을 찾는 데에 시간을 너무 뺏어 먹었다. 차 후 빠른 시간 내에 이슈 해결 및 v2 내용 수정을 하겠다.
